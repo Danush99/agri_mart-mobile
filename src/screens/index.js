@@ -1,5 +1,7 @@
 export { default as StartScreen } from './StartScreen'
 export { default as LoginScreen } from './LoginScreen'
-export { default as RegisterScreen } from './RegisterScreen'
+export { default as FarmerRegister1 } from './FarmerRegister1'
+export { default as FarmerRegister2 } from './FarmerRegister2'
+export { default as FarmerRegister3 } from './FarmerRegister3'
 export { default as ResetPasswordScreen } from './ResetPasswordScreen'
 export { default as Dashboard } from './Dashboard'

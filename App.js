@@ -16,7 +16,9 @@ import { theme } from './src/core/theme'
 import {
   StartScreen,
   LoginScreen,
-  RegisterScreen,
+  FarmerRegister1,
+  FarmerRegister2,
+  FarmerRegister3,
   ResetPasswordScreen,
   Dashboard,
 } from './src/screens'
@@ -32,7 +34,9 @@ export default function App() {
         <Stack.Navigator initialRouteName="StartScreen" screenOptions={{ headerShown: false,}}>
           <Stack.Screen name="StartScreen" component={StartScreen} />
           <Stack.Screen name="LoginScreen" component={LoginScreen} />
-          <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
+          <Stack.Screen name="FarmerRegister1" component={FarmerRegister1} />
+          <Stack.Screen name="FarmerRegister2" component={FarmerRegister2} />
+          <Stack.Screen name="FarmerRegister3" component={FarmerRegister3} />
           <Stack.Screen name="Dashboard" component={Dashboard} />
           <Stack.Screen name="ResetPasswordScreen" component={ResetPasswordScreen}/>
         </Stack.Navigator>

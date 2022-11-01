@@ -13,5 +13,8 @@ const styles = StyleSheet.create({
     color: theme.colors.green,
     fontWeight: 'bold',
     paddingVertical: 12,
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 })

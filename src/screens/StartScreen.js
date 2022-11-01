@@ -21,9 +21,15 @@ export default function StartScreen({ navigation }) {
       </Button>
       <Button
         mode="outlined"
-        onPress={() => navigation.navigate('RegisterScreen')}
+        onPress={() => navigation.navigate('FarmerRegister1')}
       >
-        Sign Up
+        Sign Up As a Farmer
+      </Button>
+      <Button
+        mode="outlined"
+        onPress={() => navigation.navigate('FarmerRegister3')}
+      >
+        Sign Up As a Buyer
       </Button>
     </Background>
   )

@@ -11,8 +11,9 @@ import { theme } from '../core/theme'
 import { emailValidator } from '../helpers/emailValidator'
 import { passwordValidator } from '../helpers/passwordValidator'
 import { nameValidator } from '../helpers/nameValidator'
+import DateField from 'react-native-datefield';
 
-export default function RegisterScreen({ navigation }) {
+export default function FarmerRegister3({ navigation }) {
   const [name, setName] = useState({ value: '', error: '' })
   const [email, setEmail] = useState({ value: '', error: '' })
   const [password, setPassword] = useState({ value: '', error: '' })
@@ -39,30 +40,6 @@ export default function RegisterScreen({ navigation }) {
       <Logo />
       <Header>Create Account</Header>
       <TextInput
-        label="First Name"
-        returnKeyType="next"
-        value={name.value}
-        onChangeText={(text) => setName({ value: text, error: '' })}
-        error={!!name.error}
-        errorText={name.error}
-      />
-      <TextInput
-        label="Last Name"
-        returnKeyType="next"
-        value={name.value}
-        onChangeText={(text) => setName({ value: text, error: '' })}
-        error={!!name.error}
-        errorText={name.error}
-      />
-      <TextInput
-        label="Name"
-        returnKeyType="next"
-        value={name.value}
-        onChangeText={(text) => setName({ value: text, error: '' })}
-        error={!!name.error}
-        errorText={name.error}
-      />
-      <TextInput
         label="Email"
         returnKeyType="next"
         value={email.value}
@@ -83,6 +60,35 @@ export default function RegisterScreen({ navigation }) {
         errorText={password.error}
         secureTextEntry
       />
+      <TextInput
+        label="Confirm password"
+        returnKeyType="done"
+        value={password.value}
+        onChangeText={(text) => setPassword({ value: text, error: '' })}
+        error={!!password.error}
+        errorText={password.error}
+        secureTextEntry
+      />
+
+      {/* <DateField onSubmit={(value) => 
+        console.log(value)} 
+      />
+
+      <DateField
+        labelDate="date  "
+        labelMonth="month  "
+        labelYear="year"
+        onSubmit={(value) => console.log(value)}
+      />
+
+      <DateField
+        disabled
+        defaultValue={new Date()}
+        styleInput={{ fontSize: 18 }}
+        containerStyle={{ marginVertical: 10 }}
+      /> */}
+
+
       <Button
         mode="contained"
         onPress={onSignUpPressed}
@@ -107,6 +113,6 @@ const styles = StyleSheet.create({
   },
   link: {
     fontWeight: 'bold',
-    color: theme.colors.green,
+    color: theme.colors.primary,
   },
 })

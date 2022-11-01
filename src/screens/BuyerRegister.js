@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { TouchableOpacity, StyleSheet, View } from 'react-native'
+import { View, StyleSheet, TouchableOpacity } from 'react-native'
 import { Text } from 'react-native-paper'
 import Background from '../components/Background'
 import Logo from '../components/Logo'
@@ -10,15 +10,20 @@ import BackButton from '../components/BackButton'
 import { theme } from '../core/theme'
 import { emailValidator } from '../helpers/emailValidator'
 import { passwordValidator } from '../helpers/passwordValidator'
+import { nameValidator } from '../helpers/nameValidator'
+import DateField from 'react-native-datefield';
 
-export default function LoginScreen({ navigation }) {
+export default function BuyerRegister({ navigation }) {
+  const [name, setName] = useState({ value: '', error: '' })
   const [email, setEmail] = useState({ value: '', error: '' })
   const [password, setPassword] = useState({ value: '', error: '' })
 
-  const onLoginPressed = () => {
+  const onSignUpPressed = () => {
+    const nameError = nameValidator(name.value)
     const emailError = emailValidator(email.value)
     const passwordError = passwordValidator(password.value)
-    if (emailError || passwordError) {
+    if (emailError || passwordError || nameError) {
+      setName({ ...name, error: nameError })
       setEmail({ ...email, error: emailError })
       setPassword({ ...password, error: passwordError })
       return
@@ -33,7 +38,15 @@ export default function LoginScreen({ navigation }) {
     <Background>
       <BackButton goBack={navigation.goBack} />
       <Logo />
-      <Header>Welcome back.</Header>
+      <Header>Create Account</Header>
+      <TextInput
+        label="Name"
+        returnKeyType="next"
+        value={name.value}
+        onChangeText={(text) => setName({ value: text, error: '' })}
+        error={!!name.error}
+        errorText={name.error}
+      />
       <TextInput
         label="Email"
         returnKeyType="next"
@@ -55,20 +68,37 @@ export default function LoginScreen({ navigation }) {
         errorText={password.error}
         secureTextEntry
       />
-      <View style={styles.forgotPassword}>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('ResetPasswordScreen')}
-        >
-          <Text style={styles.forgot}>Forgot your password?</Text>
-        </TouchableOpacity>
-      </View>
-      <Button mode="contained" onPress={onLoginPressed}>
-        Login
+
+      <DateField onSubmit={(value) => 
+        console.log(value)} 
+      />
+
+      <DateField
+        labelDate="date  "
+        labelMonth="month  "
+        labelYear="year"
+        onSubmit={(value) => console.log(value)}
+      />
+
+      <DateField
+        disabled
+        defaultValue={new Date()}
+        styleInput={{ fontSize: 18 }}
+        containerStyle={{ marginVertical: 10 }}
+      />
+
+
+      <Button
+        mode="contained"
+        onPress={onSignUpPressed}
+        style={{ marginTop: 24 }}
+      >
+        Sign Up
       </Button>
       <View style={styles.row}>
-        <Text>Don’t have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.replace('StartScreen')}>
-          <Text style={styles.link}>Sign up</Text>
+        <Text>Already have an account? </Text>
+        <TouchableOpacity onPress={() => navigation.replace('LoginScreen')}>
+          <Text style={styles.link}>Login</Text>
         </TouchableOpacity>
       </View>
     </Background>
@@ -76,21 +106,12 @@ export default function LoginScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  forgotPassword: {
-    width: '100%',
-    alignItems: 'flex-end',
-    marginBottom: 24,
-  },
   row: {
     flexDirection: 'row',
     marginTop: 4,
   },
-  forgot: {
-    fontSize: 13,
-    color: theme.colors.secondary,
-  },
   link: {
     fontWeight: 'bold',
-    color: theme.colors.green,
+    color: theme.colors.primary,
   },
 })
