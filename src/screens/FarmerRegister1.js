@@ -23,8 +23,8 @@ export default function FarmerRegister1({ navigation }) {
   const onDistOpen = useCallback(() => {
     setdivOpen(false);
   }, []);
-
-  const [division, setDivision] = useState(districs_data);
+//setDivision(division_data[DistValue])
+  const [division, setDivision] = useState([{ "label": "Select a district Before Select a division","value": "Select a district"}]);
   const [divtOpen, setdivOpen] = useState(false);
   const [divValue, setdivValue] = useState(null);
   const ondivOpen = useCallback(() => {
