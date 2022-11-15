@@ -45,46 +45,12 @@ export default function FarmerRegister1({ navigation }) {
     })
     )
     setErrors(err)
-
-
-    // for([key, val] of Object.entries(data)) {
-    //   if(val==null || val==""){
-    //     console.log("error: ",key,val)
-    //     anyerrors = true
-    //     var error = "This input field can't be empty."
-    //     setErrors({ ...errors, [key]: error })
-    //   }
-    // }
     if(anyerrors){
       return
     }else{
       //navigation.navigate('FarmerRegister2', { formID: 1,formdata: data,})
     }
-    // const result = validate.login_validation(data);
-    // if (result) {
-    //   console.log("something went wrong")
-    // }
-    //console.log(data, "data");
-    
   };
-
-  // const onSignUpPressed = () => {
-  //   const nameError = nameValidator(name.value)
-  //   const emailError = emailValidator(email.value)
-  //   const passwordError = passwordValidator(password.value)
-  //   if (emailError || passwordError || nameError) {
-  //     setName({ ...name, error: nameError })
-  //     setEmail({ ...email, error: emailError })
-  //     setPassword({ ...password, error: passwordError })
-  //   "RegisterScreen2"
-  //     return
-  //   }
-  //   navigation.navigate('FarmerRegister2', { formID: 1,formdata: data,})
-  //   navigation.reset({
-  //     index: 0,
-  //     routes: [{ name: 'RegisterScreen2' }],
-  //   })
-  // }
 
   return (
     <Background>
