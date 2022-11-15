@@ -8,94 +8,95 @@ import Button from '../components/Button'
 import TextInput from '../components/TextInput'
 import BackButton from '../components/BackButton'
 import { theme } from '../core/theme'
-import { emailValidator } from '../helpers/emailValidator'
-import { passwordValidator } from '../helpers/passwordValidator'
-import { nameValidator } from '../helpers/nameValidator'
 import DateField from 'react-native-datefield';
+import {useForm, Controller} from 'react-hook-form';
 
-export default function FarmerRegister3({ navigation }) {
-  const [name, setName] = useState({ value: '', error: '' })
-  const [email, setEmail] = useState({ value: '', error: '' })
-  const [password, setPassword] = useState({ value: '', error: '' })
 
-  const onSignUpPressed = () => {
-    const nameError = nameValidator(name.value)
-    const emailError = emailValidator(email.value)
-    const passwordError = passwordValidator(password.value)
-    if (emailError || passwordError || nameError) {
-      setName({ ...name, error: nameError })
-      setEmail({ ...email, error: emailError })
-      setPassword({ ...password, error: passwordError })
-      return
-    }
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Dashboard' }],
-    })
-  }
+export default function FarmerRegister3({ navigation,route }) {
+
+  const { handleSubmit, control } = useForm();
+  const { formID, formdata } = route.params;
+  const onSubmit = (data) => {
+    allData = Object.assign({}, formdata, data);
+    console.log(allData, "data");
+    navigation.navigate('Dashboard', { formID: 1,formdata: allData,})
+  };
+
+  // const onSignUpPressed = () => {
+  //   const nameError = nameValidator(name.value)
+  //   const emailError = emailValidator(email.value)
+  //   const passwordError = passwordValidator(password.value)
+  //   if (emailError || passwordError || nameError) {
+  //     setName({ ...name, error: nameError })
+  //     setEmail({ ...email, error: emailError })
+  //     setPassword({ ...password, error: passwordError })
+  //     return
+  //   }
+  //   navigation.reset({
+  //     index: 0,
+  //     routes: [{ name: 'Dashboard' }],
+  //   })
+  // }
 
   return (
     <Background>
       <BackButton goBack={navigation.goBack} />
       <Logo />
       <Header>Create Account</Header>
-      <TextInput
-        label="Email"
-        returnKeyType="next"
-        value={email.value}
-        onChangeText={(text) => setEmail({ value: text, error: '' })}
-        error={!!email.error}
-        errorText={email.error}
-        autoCapitalize="none"
-        autoCompleteType="email"
-        textContentType="emailAddress"
-        keyboardType="email-address"
-      />
-      <TextInput
-        label="Password"
-        returnKeyType="done"
-        value={password.value}
-        onChangeText={(text) => setPassword({ value: text, error: '' })}
-        error={!!password.error}
-        errorText={password.error}
-        secureTextEntry
-      />
-      <TextInput
-        label="Confirm password"
-        returnKeyType="done"
-        value={password.value}
-        onChangeText={(text) => setPassword({ value: text, error: '' })}
-        error={!!password.error}
-        errorText={password.error}
-        secureTextEntry
-      />
 
-      {/* <DateField onSubmit={(value) => 
-        console.log(value)} 
+      <Controller
+        name="email"
+        defaultValue=""
+        control={control}
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            placeholder="Email"
+            onChangeText={onChange}
+            value={value}
+            autoCompleteType="email"
+            textContentType="emailAddress"
+            keyboardType="email-address"
+          />
+        )}
       />
-
-      <DateField
-        labelDate="date  "
-        labelMonth="month  "
-        labelYear="year"
-        onSubmit={(value) => console.log(value)}
+      <Controller
+        name="password1"
+        defaultValue=""
+        control={control}
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            placeholder="Password"
+            returnKeyType="done"
+            onChangeText={onChange}
+            value={value}
+            secureTextEntry
+          />
+        )}
       />
-
-      <DateField
-        disabled
-        defaultValue={new Date()}
-        styleInput={{ fontSize: 18 }}
-        containerStyle={{ marginVertical: 10 }}
-      /> */}
-
+      <Controller
+        name="password2"
+        defaultValue=""
+        control={control}
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            placeholder="Confirmation Password"
+            returnKeyType="done"
+            onChangeText={onChange}
+            value={value}
+            secureTextEntry
+          />
+        )}
+      />
 
       <Button
         mode="contained"
-        onPress={onSignUpPressed}
+        //onPress={onSignUpPressed}
+        onPress={handleSubmit(onSubmit)}
         style={{ marginTop: 24 }}
       >
         Sign Up
       </Button>
+
       <View style={styles.row}>
         <Text>Already have an account? </Text>
         <TouchableOpacity onPress={() => navigation.replace('LoginScreen')}>
@@ -115,4 +116,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: theme.colors.primary,
   },
+  nextPage: {
+    marginTop: 24,
+    width: '50%',
+    height: 50,
+  }
 })

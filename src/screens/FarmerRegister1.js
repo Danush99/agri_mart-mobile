@@ -1,76 +1,90 @@
-import React, { useState,useCallback } from 'react'
-import { View, StyleSheet, TouchableOpacity } from 'react-native'
-import { Text } from 'react-native-paper'
+import React, { useState,useCallback,useEffect } from 'react'
+import { View, StyleSheet, TouchableOpacity,Text } from 'react-native'
+//import { Text } from 'react-native-paper'
 import Background from '../components/Background'
 import TextInput from '../components/TextInput'
 import Logo from '../components/Logo'
 import Header from '../components/Header'
 import Button from '../components/Button'
 import BackButton from '../components/BackButton'
+import NextIcon from '../components/NextIcon'
+//import validate from '../helpers/validate'
 import DropDownPicker from "react-native-dropdown-picker"
 import { theme } from '../core/theme'
-import { emailValidator } from '../helpers/emailValidator'
-import { passwordValidator } from '../helpers/passwordValidator'
-import { nameValidator } from '../helpers/nameValidator'
 import {useForm, Controller} from 'react-hook-form';
-import { dataJson,locations } from "./Registration_data/data";
+import { districs_data,division_data } from "./Registration_data/selectionData";
 
 export default function FarmerRegister1({ navigation }) {
-  const [name, setName] = useState({ value: '', error: '' })
-  const [email, setEmail] = useState({ value: '', error: '' })
-  const [password, setPassword] = useState({ value: '', error: '' })
-
 
   const { handleSubmit, control } = useForm();
-  const [date, setDate] = useState('09-10-2021');
-
-  const [district, setDistrict] = useState(locations.districts);
+  const [district, setDistrict] = useState(districs_data);
   const [distOpen, setdistOpen] = useState(false);
   const [DistValue, setDistValue] = useState(null);
   const onDistOpen = useCallback(() => {
     setdivOpen(false);
   }, []);
 
-  const [division, setDivision] = useState([]);
+  const [division, setDivision] = useState(districs_data);
   const [divtOpen, setdivOpen] = useState(false);
   const [divValue, setdivValue] = useState(null);
   const ondivOpen = useCallback(() => {
     setdistOpen(false);
   }, []);
 
-  const [company, setComapny] = useState([
-    { label: "UET", value: "uet1" },
-    { label: "aET", value: "uet2" },
-    { label: "bET", value: "uet3" },
-    { label: "cET", value: "uet4" },
-    { label: "eET", value: "uet5" },
-    { label: "fET", value: "uet6" },
-    { label: "gET", value: "uet7" },
-  ]);
-  const [companyOpen, setCompanyOpen] = useState(false);
-  const [companyValue, setCompanyValue] = useState(null);
-  const onCompanyOpen = useCallback(() => {
-    setGenderOpen(false);
-  }, []);
+  const [errors, setErrors] = useState({ Fname: '', Lname: '',Distric:'',Devision:'' })
 
-  const onSignUpPressed = () => {
-    
-    const nameError = nameValidator(name.value)
-    const emailError = emailValidator(email.value)
-    const passwordError = passwordValidator(password.value)
-    // if (emailError || passwordError || nameError) {
-    //   setName({ ...name, error: nameError })
-    //   setEmail({ ...email, error: emailError })
-    //   setPassword({ ...password, error: passwordError })
-    // "RegisterScreen2"
-    //   return
+  const onSubmit = (data) => {
+    var anyerrors=false;
+    const err = Object.fromEntries(Object.entries(data).map(([key,val]) => {
+      if(val==null || val==""){
+        anyerrors = true
+        return [key,"This input field can't be empty."]
+      }else{
+        return [key,""]
+      }
+    })
+    )
+    setErrors(err)
+
+
+    // for([key, val] of Object.entries(data)) {
+    //   if(val==null || val==""){
+    //     console.log("error: ",key,val)
+    //     anyerrors = true
+    //     var error = "This input field can't be empty."
+    //     setErrors({ ...errors, [key]: error })
+    //   }
     // }
-    navigation.navigate('FarmerRegister2')
-    // navigation.reset({
-    //   index: 0,
-    //   routes: [{ name: 'RegisterScreen2' }],
-    // })
-  }
+    if(anyerrors){
+      return
+    }else{
+      //navigation.navigate('FarmerRegister2', { formID: 1,formdata: data,})
+    }
+    // const result = validate.login_validation(data);
+    // if (result) {
+    //   console.log("something went wrong")
+    // }
+    //console.log(data, "data");
+    
+  };
+
+  // const onSignUpPressed = () => {
+  //   const nameError = nameValidator(name.value)
+  //   const emailError = emailValidator(email.value)
+  //   const passwordError = passwordValidator(password.value)
+  //   if (emailError || passwordError || nameError) {
+  //     setName({ ...name, error: nameError })
+  //     setEmail({ ...email, error: emailError })
+  //     setPassword({ ...password, error: passwordError })
+  //   "RegisterScreen2"
+  //     return
+  //   }
+  //   navigation.navigate('FarmerRegister2', { formID: 1,formdata: data,})
+  //   navigation.reset({
+  //     index: 0,
+  //     routes: [{ name: 'RegisterScreen2' }],
+  //   })
+  // }
 
   return (
     <Background>
@@ -87,6 +101,8 @@ export default function FarmerRegister1({ navigation }) {
             placeholder="First name"
             onChangeText={onChange}
             value={value}
+            error={!!errors.Fname}
+            errorText={errors.Fname}
           />
         )}
       />
@@ -101,6 +117,8 @@ export default function FarmerRegister1({ navigation }) {
             placeholder="Last Name"
             onChangeText={onChange}
             value={value}
+            error={!!errors.Lname}
+            errorText={errors.Lname}
           />
         )}
       />
@@ -126,15 +144,15 @@ export default function FarmerRegister1({ navigation }) {
               searchPlaceholder="Search your District here"
               onOpen={onDistOpen}
               onChangeValue={onChange}
-               zIndex={1000}
+               zIndex={10000}
               zIndexInverse={3000}
             />
           </View>
         )}
       />
-
+      {errors["Distric"]=="" ? null:(<View><Text style={styles.err}>{errors["Distric"]}</Text></View>)}
       <Controller
-        name="Devision"
+        name="Division"
         defaultValue=""
         control={control}
         render={({ field: { onChange, value } }) => (
@@ -155,51 +173,19 @@ export default function FarmerRegister1({ navigation }) {
               onOpen={ondivOpen}
               onChangeValue={onChange}
                zIndex={1000}
-              zIndexInverse={3000}
+              zIndexInverse={50000}
             />
           </View>
         )}
       />
-
-
-
-      {/* <TextInput
-        label="Name"
-        returnKeyType="next"
-        value={name.value}
-        onChangeText={(text) => setName({ value: text, error: '' })}
-        error={!!name.error}
-        errorText={name.error}
-      />
-      <TextInput
-        label="Email"
-        returnKeyType="next"
-        value={email.value}
-        onChangeText={(text) => setEmail({ value: text, error: '' })}
-        error={!!email.error}
-        errorText={email.error}
-        autoCapitalize="none"
-        autoCompleteType="email"
-        textContentType="emailAddress"
-        keyboardType="email-address"
-      />
-      <TextInput
-        label="Password"
-        returnKeyType="done"
-        value={password.value}
-        onChangeText={(text) => setPassword({ value: text, error: '' })}
-        error={!!password.error}
-        errorText={password.error}
-        secureTextEntry
-      /> */}
-      
-
+      {errors["Division"]=="" ? null:(<View><Text style={styles.err}>{errors["Division"]}</Text></View>)}
       <Button
+        onPress={handleSubmit(onSubmit)}
         mode="contained"
-        onPress={onSignUpPressed}
-        style={{ marginTop: 24 }}
+        style={styles.nextPage}
       >
         Next Page
+      <NextIcon />
       </Button>
       
       <View style={styles.row}>
@@ -216,15 +202,14 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     marginTop: 4,
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   link: {
     fontWeight: 'bold',
     color: theme.colors.primary,
-  },
-  placeholderStyles: {
-    color: "#706e6e",
-    fontSize: 15,
-  },
+  }, 
   dropdownCompany: {
     width: '100%',
     marginBottom: 10,
@@ -236,5 +221,15 @@ const styles = StyleSheet.create({
   inputfields: {
     marginTop: 10,
     marginBottom:0,
+  },
+  nextPage: {
+    width: '50%',
+    marginLeft: 150,
+    height: 50,
+  },
+  err:{
+    left: 0,
+    marginBottom:10,
+    color: 'red',
   }
 })
