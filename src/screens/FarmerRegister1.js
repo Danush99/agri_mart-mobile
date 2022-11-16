@@ -25,7 +25,7 @@ export default function FarmerRegister1({ navigation }) {
     setdivOpen(false);
   }, []);
 
-  const [errors, setErrors] = useState({ Fname: '', Lname: '',Distric:'',Phone_Number:'' })
+  const [errors, setErrors] = useState({ firstname: '', lastname: '',Distric:'',phone_number:'' })
 
   const onSubmit = (data) => {
     var anyerrors=false;
@@ -54,7 +54,7 @@ export default function FarmerRegister1({ navigation }) {
       <Header>Create Account</Header>
 
       <Controller
-        name="Fname"
+        name="firstname"
         defaultValue=""
         control={control}
         render={({ field: { onChange, value } }) => (
@@ -62,15 +62,15 @@ export default function FarmerRegister1({ navigation }) {
             placeholder="First name"
             onChangeText={onChange}
             value={value}
-            error={!!errors.Fname}
-            errorText={errors.Fname}
+            error={!!errors.firstname}
+            errorText={errors.firstname}
           />
         )}
       />
 
       <Controller
         style={styles.inputfields}
-        name="Lname"
+        name="lastname"
         defaultValue=""
         control={control}
         render={({ field: { onChange, value } }) => (
@@ -78,14 +78,14 @@ export default function FarmerRegister1({ navigation }) {
             placeholder="Last Name"
             onChangeText={onChange}
             value={value}
-            error={!!errors.Lname}
-            errorText={errors.Lname}
+            error={!!errors.lastname}
+            errorText={errors.lastname}
           />
         )}
       />
 
       <Controller
-        name="Phone_Number"
+        name="phone_number"
         defaultValue=""
         control={control}
         render={({ field: { onChange, value } }) => (
@@ -96,7 +96,7 @@ export default function FarmerRegister1({ navigation }) {
           />
         )}
       />
-      {errors["Phone_Number"]=="" ? null:(<View><Text style={styles.err}>{errors["Phone_Number"]}</Text></View>)}
+      {errors["phone_number"]=="" ? null:(<View><Text style={styles.err}>{errors["phone_number"]}</Text></View>)}
 
       <Controller
         name="District"
