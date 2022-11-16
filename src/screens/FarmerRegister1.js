@@ -19,19 +19,13 @@ export default function FarmerRegister1({ navigation }) {
   const { handleSubmit, control } = useForm();
   const [district, setDistrict] = useState(districs_data);
   const [distOpen, setdistOpen] = useState(false);
+  const [divtOpen, setdivOpen] = useState(false);
   const [DistValue, setDistValue] = useState(null);
   const onDistOpen = useCallback(() => {
     setdivOpen(false);
   }, []);
-//setDivision(division_data[DistValue])
-  const [division, setDivision] = useState([{ "label": "Select a district Before Select a division","value": "Select a district"}]);
-  const [divtOpen, setdivOpen] = useState(false);
-  const [divValue, setdivValue] = useState(null);
-  const ondivOpen = useCallback(() => {
-    setdistOpen(false);
-  }, []);
 
-  const [errors, setErrors] = useState({ Fname: '', Lname: '',Distric:'',Devision:'' })
+  const [errors, setErrors] = useState({ Fname: '', Lname: '',Distric:'',Phone_Number:'' })
 
   const onSubmit = (data) => {
     var anyerrors=false;
@@ -48,7 +42,8 @@ export default function FarmerRegister1({ navigation }) {
     if(anyerrors){
       return
     }else{
-      //navigation.navigate('FarmerRegister2', { formID: 1,formdata: data,})
+      console.log("data ",data)
+      navigation.navigate('FarmerRegister2', { formID: 1,formdata: data,})
     }
   };
 
@@ -90,7 +85,21 @@ export default function FarmerRegister1({ navigation }) {
       />
 
       <Controller
-        name="Distric"
+        name="Phone_Number"
+        defaultValue=""
+        control={control}
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            placeholder="Phone Number"
+            onChangeText={onChange}
+            value={value}
+          />
+        )}
+      />
+      {errors["Phone_Number"]=="" ? null:(<View><Text style={styles.err}>{errors["Phone_Number"]}</Text></View>)}
+
+      <Controller
+        name="District"
         defaultValue=""
         control={control}
         render={({ field: { onChange, value } }) => (
@@ -117,34 +126,7 @@ export default function FarmerRegister1({ navigation }) {
         )}
       />
       {errors["Distric"]=="" ? null:(<View><Text style={styles.err}>{errors["Distric"]}</Text></View>)}
-      <Controller
-        name="Division"
-        defaultValue=""
-        control={control}
-        render={({ field: { onChange, value } }) => (
-          <View style={styles.dropdownCompany}>
-            <DropDownPicker
-              style={styles.dropdown}
-              open={divtOpen}
-              value={divValue} //companyValue
-              items={division}
-              setOpen={setdivOpen}
-              setValue={setdivValue}
-              setItems={setDivision}
-              placeholder="Select Division"
-              placeholderStyle={styles.placeholderStyles}
-              activityIndicatorColor="#5188E3"
-              searchable={true}
-              searchPlaceholder="Search your Division here"
-              onOpen={ondivOpen}
-              onChangeValue={onChange}
-               zIndex={1000}
-              zIndexInverse={50000}
-            />
-          </View>
-        )}
-      />
-      {errors["Division"]=="" ? null:(<View><Text style={styles.err}>{errors["Division"]}</Text></View>)}
+
       <Button
         onPress={handleSubmit(onSubmit)}
         mode="contained"
