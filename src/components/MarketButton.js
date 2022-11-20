@@ -2,17 +2,17 @@ import React from 'react';
 import { TouchableHighlight, Image, Text, View, StyleSheet } from 'react-native';
 import PropTypes from 'prop-types';
 
-export default function ViewIngredientsButton ({buttonName, ...props} ) {
+export default function MarketButton ({buttonName,btColor, ...props} ) {
     return (
-      <TouchableHighlight underlayColor='rgba(73,182,77,0.9)' onPress={props.onPress}>
-        <View style={styles.container}>
-          <Text style={styles.text}>{buttonName}</Text>
+      <TouchableHighlight activeOpacity={0.9} underlayColor="#DDDDDD" onPress={props.onPress}>
+        <View style={[styles.container,{borderColor: (btColor?btColor:'#2cd18a') }]}>
+          <Text style={[styles.text,{color: (btColor?btColor:'#2cd18a')}]}>{buttonName}</Text>
         </View>
       </TouchableHighlight>
     );
 }
 
-ViewIngredientsButton.propTypes = {
+MarketButton.propTypes = {
   onPress: PropTypes.func,
   source: PropTypes.number,
   title: PropTypes.string
@@ -20,9 +20,10 @@ ViewIngredientsButton.propTypes = {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // height: 50,
+    // width: 270,
     height: 50,
-    width: 270,
+    width: 200,
     marginTop: 20,
     marginLeft: 10,
     marginRight: 10,

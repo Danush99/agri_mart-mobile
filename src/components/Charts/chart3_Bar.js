@@ -11,9 +11,9 @@ import {
 
 const screenWidth = Dimensions.get("window").width;
 const chartConfig = {
-    backgroundGradientFrom: "#F2F2F2",
+    backgroundGradientFrom: "white",
     //backgroundGradientFromOpacity: 5,
-    backgroundGradientTo: "#F2F2F2",
+    backgroundGradientTo: "white",
     //backgroundGradientToOpacity: 5,
     decimalPlaces: 0,
     //backgroundColor: "white",

@@ -1,4 +1,6 @@
-import React, { useLayoutEffect, useRef, useState } from "react";
+import React, { useLayoutEffect, useState, useEffect, useRef } from "react";
+import { useLogin } from '../../context/LoginProvider'
+
 import {Modal,Pressable,ScrollView,Text,View,Image,Dimensions,TouchableHighlight,StyleSheet,LogBox} from "react-native";
 import {PaddyFieldTargetProductivity2022,PaddyFieldProgressProductivity2022,PaddyBarchartData,Effectiveness2021,Effectiveness2022} from '../../data/DashboardFixData'
 import Chart3_Bar from '../../components/Charts/chart3_Bar'
@@ -6,11 +8,36 @@ import Chart5_comBar from '../../components/Charts/Chart5_compBar'
 
 
 export default function Dashboard({ navigation }) {
+  const { user } = useLogin();
+  const [UserID, setUserID] = useState(user._id);
+  const [TypeId, setTypeId] = useState(user.typeId);
+  const [UserType, setUserType] = useState(user.userType);
 
   const [isCommon, setIsCommon] = useState(true);
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: () => (
+        <View>
+        <Image style={{width: 100,height: 40}} source={require("../../assets/LogoHeader.png")} />
+      </View>
+      ),
+      headerRight: () => (
+      <View>
+          <Image
+            source={{
+              uri:
+                'https://firebasestorage.googleapis.com/v0/b/agri-mart-pid11.appspot.com/o/profilePictures%2FDefault%20profile%20picture%20green.png?alt=media&token=388b1552-9aca-451a-ab99-0e9a11985627',
+            }}
+            style={{ width: 45, height: 45, borderRadius: 30,marginRight:15 }}
+          />
+      </View>
+      ),
+    });
+  }, []);
+
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.MainContainer}>
       <View style={styles.FilterButtonsContainer}>
         <Pressable onPress={() => setIsCommon(true)}>
           <Text style={[ styles.FilterButtons,isCommon && styles.FilterButtonsSelected, ]}>Common Data</Text>
@@ -77,5 +104,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 22
-  }
+  },
+  MainContainer:{
+    backgroundColor: 'white',
+    flex: 1
+},
 })

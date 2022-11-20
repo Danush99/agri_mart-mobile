@@ -14,8 +14,10 @@ import { theme } from '../core/theme'
 import {useForm, Controller} from 'react-hook-form';
 import { districs_data,division_data } from "./Registration_data/selectionData";
 
-export default function FarmerRegister1({ navigation }) {
 
+export default function FarmerRegister1({ navigation,route }) {
+
+  const { allErrors,preValues } = route.params;
   const { handleSubmit, control } = useForm();
   const [district, setDistrict] = useState(districs_data);
   const [distOpen, setdistOpen] = useState(false);
@@ -25,7 +27,11 @@ export default function FarmerRegister1({ navigation }) {
     setdivOpen(false);
   }, []);
 
-  const [errors, setErrors] = useState({ firstname: '', lastname: '',Distric:'',phone_number:'' })
+  const [errors, setErrors] = useState(allErrors)
+
+  useEffect(() => {
+    setErrors(allErrors)
+  }, [allErrors]);
 
   const onSubmit = (data) => {
     var anyerrors=false;
@@ -42,8 +48,12 @@ export default function FarmerRegister1({ navigation }) {
     if(anyerrors){
       return
     }else{
-      console.log("data ",data)
-      navigation.navigate('FarmerRegister2', { formID: 1,formdata: data,})
+      if(allErrors){
+        navigation.navigate('FarmerRegister2', { formID: 1,formdata: data,allErrors:allErrors,preValues:preValues})
+      }else{
+        navigation.navigate('FarmerRegister2', { formID: 1,formdata: data,allErrors:false,preValues:false})
+      }
+      
     }
   };
 
@@ -125,7 +135,7 @@ export default function FarmerRegister1({ navigation }) {
           </View>
         )}
       />
-      {errors["Distric"]=="" ? null:(<View><Text style={styles.err}>{errors["Distric"]}</Text></View>)}
+      {errors["District"]=="" ? null:(<View><Text style={styles.err}>{errors["District"]}</Text></View>)}
 
       <Button
         onPress={handleSubmit(onSubmit)}

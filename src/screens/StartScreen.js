@@ -21,13 +21,13 @@ export default function StartScreen({ navigation }) {
       </Button>
       <Button
         mode="outlined"
-        onPress={() => navigation.navigate('FarmerRegister1')}
+        onPress={() => navigation.navigate('FarmerRegister1',{allErrors:false,preValues:false})}
       >
         Sign Up As a Farmer
       </Button>
       <Button
         mode="outlined"
-        onPress={() => navigation.navigate('FarmerRegister3')}
+        onPress={() => navigation.navigate('BuyerRegister')}
       >
         Sign Up As a Buyer
       </Button>

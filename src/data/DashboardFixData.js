@@ -375,30 +375,31 @@ export const WaterSummary20221 =[
 
 ]
 
-let dataBar = {
-    labels: [],
-    datasets: [
-      {
-        data: []
-      }
-    ]
-  };
-  let effdataset1=[]
-  let effdataset2=[]
-  for (let x=0;x<WaterSummary20226.length;x++){
-    dataBar.labels.push(WaterSummary20226[x].region_name)
-    dataBar.datasets[0].data.push(parseInt(WaterSummary20226[x].NoT))
-    let effxy1={x:"",y:""}
-    let effxy2={x:"",y:""}
-    effxy1.x=WaterSummary20221[x].region_name
-    effxy2.x=WaterSummary20226[x].region_name
-    effxy1.y=WaterSummary20221[x].eff
-    effxy2.y=WaterSummary20226[x].eff
-    effdataset1.push(effxy1)
-    effdataset2.push(effxy2)
-  }
+// let dataBar = {
+//     labels: [],
+//     datasets: [
+//       {
+//         data: []
+//       }
+//     ]
+//   };
+//   let effdataset1=[]
+//   let effdataset2=[]
+//   for (let x=0;x<WaterSummary20226.length;x++){
+//     dataBar.labels.push(WaterSummary20226[x].region_name)
+//     dataBar.datasets[0].data.push(parseInt(WaterSummary20226[x].NoT))
+//     let effxy1={x:"",y:""}
+//     let effxy2={x:"",y:""}
+//     effxy1.x=WaterSummary20221[x].region_name
+//     effxy2.x=WaterSummary20226[x].region_name
+//     effxy1.y=WaterSummary20221[x].eff
+//     effxy2.y=WaterSummary20226[x].eff
+//     effdataset1.push(effxy1)
+//     effdataset2.push(effxy2)
+//   }
+// console.log("dataBar: ",dataBar.datasets[0].data)
 
-export const PaddyBarchartData = dataBar
-export const Effectiveness2021 = effdataset1
-export const Effectiveness2022 = effdataset2
+export const PaddyBarchartData =  {"datasets": [{"data": [9, 10, 7, 4, 10, 2, 3, 10, 3, 4, 2, 5, 4]}], "labels": ["Ampara", "Anuradapura", "Badulla", "Batticaloa", "Hambantota", "Galle", "Kandy", "Kurunegala", "Monaragala", "Polonnaruwa", "Puttalam", "Trincomalee", "Mannar"]}
+export const Effectiveness2021 = [{"x": "Ampara", "y": 47}, {"x": "Anuradapura", "y": 94}, {"x": "Badulla", "y": 80}, {"x": "Batticaloa", "y": 93}, {"x": "Hambantota", "y": 64}, {"x": "Galle", "y": 93}, {"x": "Kandy", "y": 99}, {"x": "Kurunegala", "y": 84}, {"x": "Monaragala", "y": 82}, {"x": "Polonnaruwa", "y": 88}, {"x": "Puttalam", "y": 84}, {"x": "Trincomalee", "y": 82}, {"x": "Mannar", "y": 94}]
+export const Effectiveness2022 =  [{"x": "Ampara", "y": 36}, {"x": "Anuradapura", "y": 74}, {"x": "Badulla", "y": 48}, {"x": "Batticaloa", "y": 67}, {"x": "Hambantota", "y": 60}, {"x": "Galle", "y": 96}, {"x": "Kandy", "y": 81}, {"x": "Kurunegala", "y": 83}, {"x": "Monaragala", "y": 50}, {"x": "Polonnaruwa", "y": 76}, {"x": "Puttalam", "y": 65}, {"x": "Trincomalee", "y": 67}, {"x": "Mannar", "y": 69}]
 

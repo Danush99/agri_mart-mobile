@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState,useEffect } from "react";
 import { TouchableOpacity, StyleSheet, View } from 'react-native'
 import { Text } from 'react-native-paper'
+import {useForm, Controller} from 'react-hook-form';
 import Background from '../components/Background'
 import Logo from '../components/Logo'
 import Header from '../components/Header'
@@ -8,51 +9,107 @@ import Button from '../components/Button'
 import TextInput from '../components/TextInput'
 import BackButton from '../components/BackButton'
 import { theme } from '../core/theme'
+import AuthServices from "../services/AuthServices";
+import { useLogin } from '../context/LoginProvider';
 
-export default function LoginScreen({ navigation }) {
-  const [email, setEmail] = useState({ value: '', error: '' })
-  const [password, setPassword] = useState({ value: '', error: '' })
+export default function LoginScreen({ navigation,route }) {
+  const { setIsLoggedIn, setUser } = useLogin();
+  const { handleSubmit, control } = useForm();
+  const [errors, setErrors] = useState({ email: '', password: ''})
+  const [IsSubmit, setIsSubmit] = useState(false);
+  const [FromValues, setFromValues] = useState();
 
-  const onLoginPressed = () => {
-    // const emailError = emailValidator(email.value)
-    // const passwordError = passwordValidator(password.value)
-    // if (emailError || passwordError) {
-    //   setEmail({ ...email, error: emailError })
-    //   setPassword({ ...password, error: passwordError })
-    //   return
-    // }
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'WelcomePage' }],
-    })
+  const handleBackendErrors = (errors) => {
+    console.log("error : ",errors);
+    var allErrorsObject={}
+    for(let x=0;x<errors.length;x++){
+      var errObjet = errors[x]
+      var labelN = errObjet.path[0]
+      var errMsg = String(errObjet.message)
+      allErrorsObject[labelN]=errMsg
+    }
+    console.log("allErrorsObject : ",allErrorsObject)
+    setErrors(allErrorsObject)
   }
+  
+  useEffect(() => {
+    if (IsSubmit) {
+      AuthServices.LoginUser(FromValues)
+      .then((res) => {
+        console.log(res);
+        setUser(res.user);
+        setIsLoggedIn(true);
+      })
+      .catch((err) => {
+        console.log("backend error : ",err)
+        handleBackendErrors(err.message)
+      });
+      setIsSubmit(false);
+  }
+  },[IsSubmit,FromValues]);
+
+  const onSubmit = (data) => {
+    console.log("submited")
+    var anyErrors=false;
+    const err = Object.fromEntries(Object.entries(data).map(([key,val]) => {
+      if(val==null || val==""){
+        anyErrors = true
+        return [key,"This input field can't be empty."]
+      }else{
+        return [key,""]
+      }
+    })
+    )
+    console.log("error",err)
+    setErrors(err)
+    if(anyErrors){
+      return
+    }else{
+      const allData = Object.assign({}, data, {mobile:true});
+      setFromValues(allData)
+      setIsSubmit(true)
+    }
+  };
 
   return (
     <Background>
       <BackButton goBack={navigation.goBack} />
       <Logo />
-      <Header>Welcome back.</Header>
-      <TextInput
-        label="Email"
-        returnKeyType="next"
-        value={email.value}
-        onChangeText={(text) => setEmail({ value: text, error: '' })}
-        error={!!email.error}
-        errorText={email.error}
-        autoCapitalize="none"
-        autoCompleteType="email"
-        textContentType="emailAddress"
-        keyboardType="email-address"
+      <Header>Welcome back</Header>
+      <Controller
+        name="email"
+        defaultValue=""
+        control={control}
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            placeholder="Email"
+            onChangeText={onChange}
+            value={value}
+            autoCompleteType="email"
+            textContentType="emailAddress"
+            keyboardType="email-address"
+            error={!!errors.email}
+            errorText={errors.email}
+          />
+        )}
       />
-      <TextInput
-        label="Password"
-        returnKeyType="done"
-        value={password.value}
-        onChangeText={(text) => setPassword({ value: text, error: '' })}
-        error={!!password.error}
-        errorText={password.error}
-        secureTextEntry
+      <Controller
+        name="password"
+        defaultValue=""
+        control={control}
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            placeholder="Password"
+            returnKeyType="done"
+            onChangeText={onChange}
+            value={value}
+            secureTextEntry
+            error={!!errors.password}
+            errorText={errors.password}
+          />
+        )}
       />
+
       <View style={styles.forgotPassword}>
         <TouchableOpacity
           onPress={() => navigation.navigate('ResetPasswordScreen')}
@@ -60,15 +117,22 @@ export default function LoginScreen({ navigation }) {
           <Text style={styles.forgot}>Forgot your password?</Text>
         </TouchableOpacity>
       </View>
-      <Button mode="contained" onPress={onLoginPressed}>
-        Login
+
+      <Button
+        mode="contained"
+        onPress={handleSubmit(onSubmit)}
+        style={{ marginTop: 24 }}
+      >
+        Log in
       </Button>
+
       <View style={styles.row}>
         <Text>Don’t have an account? </Text>
         <TouchableOpacity onPress={() => navigation.replace('StartScreen')}>
           <Text style={styles.link}>Sign up</Text>
         </TouchableOpacity>
       </View>
+
     </Background>
   )
 }

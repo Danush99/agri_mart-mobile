@@ -8,16 +8,23 @@ import CheckBox from 'react-native-check-box'
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import {getIngredientName,getCategoryName,getCategoryById,} from "../../data/MockDataAPI";
 import ItemBackButton from "../../components/ItemBackButton";
+import BackButton from '../../components/BackButton'
 import TextInput from '../../components/TextInput'
 import NextIcon from '../../components/NextIcon'
 import Button from '../../components/Button'
+import InputSpinner from "react-native-input-spinner";
+import Logo from '../../components/Logo'
+import MarketPlaceServices from "../../services/MarketPlaceServices";
 
-import ViewIngredientsButton from "../../components/ViewIngredientsButton";
+
+
+import ViewIngredientsButton from "../../components/MarketButton";
 const { width: viewportWidth } = Dimensions.get("window");
 
 export default function BuyPhase(props) {
   const { navigation, route } = props;
   const item = route.params?.item;
+  const UserTypeId = route.params?.UserTypeId;
   const [activeSlide, setActiveSlide] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [isBid, setIsBid] = useState((item.bid=="1")?true:false);
@@ -52,19 +59,27 @@ export default function BuyPhase(props) {
 //   }, []);
 
   const onSubmit = (data) => {
-    //const allData = Object.assign({}, formdata, data);
-    console.log("data",data);
-    //navigation.navigate('FarmerRegister3', { formID: 2,formdata: allData,})
+    const allData = Object.assign({}, data, {IsDelivery:IsDelivery});
+    console.log("data::::::::  ,",data);
+    MarketPlaceServices.DirectBuying(allData,item,UserTypeId)
+    .then((res)=>{
+      console.log(res)
+    })
+    .catch((err)=>{
+      console.log(err)
+    })
+    const UserType = "buyer"
+    const TypeId = UserTypeId
+    navigation.navigate("MyOrders",{TypeId,UserType})
   };
 
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.infoItemContainer}>
-
-        <Text style={styles.infoItemName}>BuyPhase</Text>
-
-
+      <BackButton goBack={navigation.goBack} />
+        <Text style={styles.infoItemName}>Checkout</Text>
+        <Logo />
         <View style={styles.itemDetails}>
 
           <View style={styles.infoContainer}>
@@ -74,7 +89,7 @@ export default function BuyPhase(props) {
 
           <View style={styles.infoContainer}>
           <Text style={styles.detail}>Available         </Text>
-          <Text style={{}}>{item.availableAmount}{item.unit}</Text>
+          <Text style={{}}>{item.availableAmount} {item.unit}</Text>
           </View>
 
           <View style={styles.infoContainer}>
@@ -153,19 +168,6 @@ export default function BuyPhase(props) {
             )}
             />
 
-            <Controller
-            name="amount"
-            defaultValue=""
-            control={control}
-            render={({ field: { onChange, value } }) => (
-            <TextInput
-                placeholder="Amount"
-                onChangeText={onChange}
-                value={value}
-            />
-            )}
-            />
-
             {IsDelivery?
             <Controller
             name="address"
@@ -176,15 +178,39 @@ export default function BuyPhase(props) {
                 placeholder="Your Address"
                 onChangeText={onChange}
                 value={value}
+                numberOfLines={3}
+                multiline={true}
             />
             )}
             />:null
             }
 
+            <Controller
+            name="amount"
+            defaultValue=""
+            control={control}
+            render={({ field: { onChange, value } }) => (
+            <InputSpinner
+                max={item.availableAmount*1000}
+                min={100}
+                step={100}
+                prepend={<Text style={{paddingLeft:40}}>Amount</Text>}
+                append={<Text style={{paddingRight:40}}>g</Text>}
+                value={value}
+                onChange={onChange}
+            />
+            )}
+            />
+
+
             {IsPickup?
             <View style={styles.itemDetails}>
-            <Text style={styles.detail}>Farm address:   </Text>
-            <Text style={styles.detail}>Farmer's mobile number:   </Text>
+                <View style={styles.infoContainer}>
+                    <Text style={styles.detail}>Farm address:   </Text>
+                </View>
+                <View style={styles.infoContainer}>
+                    <Text style={styles.detail}>Farmer's mobile number:   </Text>
+                </View>
             </View>:null
             }
 
@@ -192,7 +218,7 @@ export default function BuyPhase(props) {
             onPress={handleSubmit(onSubmit)}
             mode="contained"
             style={styles.submit}
-            >Buy
+            >Buy Now
             </Button>
 
         </View>
@@ -205,6 +231,9 @@ export default function BuyPhase(props) {
 
 const styles = StyleSheet.create({
   container: {
+    marginTop:0,
+    borderColor:"#25B70E",
+    borderWidth:2,
     backgroundColor: 'white',
     flex: 1
   },
@@ -214,12 +243,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'black',
     textAlign: 'center'
-  },
-  infoContainer:{
-    marginLeft:0,
-    marginTop:0,
-    flexDirection: 'row',
-    flexWrap: 'wrap',  
   },
   infoItemContainer: {
     flex: 1,
@@ -232,5 +255,17 @@ const styles = StyleSheet.create({
     height: 50,
     // borderWidth: 0.5,
     // borderRadius: 15
+  },
+  infoContainer:{
+    marginLeft:0,
+    marginTop:10,
+    flexDirection: 'row',
+    flexWrap: 'wrap',  
+  },
+  itemDetails:{
+
+  },
+  detail:{
+    fontWeight: 'bold'
   }
 });

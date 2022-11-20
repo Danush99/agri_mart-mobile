@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useState, useEffect, useRef } from "react";
-import { FlatList, Text, View, TouchableHighlight, Image, StyleSheet, Pressable, DrawerLayoutAndroid } from "react-native";
+import { FlatList, Text, View, TouchableHighlight, Image, StyleSheet, Pressable, DrawerLayoutAndroid,TouchableOpacity,Dimensions } from "react-native";
+import { NavigationContainer, StackActions } from '@react-navigation/native';
 import { recipes } from "../../data/dataArrays";
 import MenuImage from "../../components/MenuImage";
 //import Drawer from "../../components/Drawer";
@@ -8,9 +9,18 @@ import { getCategoryName, getRecipesByRecipeName, getRecipesByCategoryName, getR
 import { ItemCard } from '../../Styles/AppStyles';
 import { TextInput } from "react-native-gesture-handler";
 import MarketPlaceServices from "../../services/MarketPlaceServices";
+import { useLogin } from '../../context/LoginProvider'
 
+const { width, height } = Dimensions.get('window');
+// orientation must fixed
+const SCREEN_WIDTH = width < height ? width : height;
 
 export default function HomeScreen(props) {
+  const { user } = useLogin();
+  const [UserID, setUserID] = useState(user._id);
+  const [TypeId, setTypeId] = useState(user.typeId);
+  const [UserType, setUserType] = useState(user.userType);
+
   const drawer = useRef(null);
   const { navigation } = props;
   const [value, setValue] = useState("");
@@ -23,6 +33,7 @@ export default function HomeScreen(props) {
   const [BidItems, setBidItems] = useState();
   const [CurrentData, setCurrentData] = useState();
 
+
   useEffect( ()=> {
     MarketPlaceServices.GetMarketItems()
     .then((data)=>{
@@ -33,11 +44,7 @@ export default function HomeScreen(props) {
         setDirectBItems(data.DirectBItems)
         setBidItems(data.BidItems)
         setData(data.Allitems)
-        console.log("All",data.Allitems)
-        console.log("veg",data.VegiItems)
-        console.log("fruit",data.FruitItems)
-        console.log("direct",data.DirectBItems)
-        console.log("Bid",data.BidItems)
+        //console.log(data.Allitems)
     })
     .catch((err)=>{
         console.log("error : ",err);
@@ -47,28 +54,24 @@ export default function HomeScreen(props) {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerLeft: () => (
-        // <DrawerLayoutAndroid
-        //   ref={drawer}
-        //   drawerWidth={300}
-        //   drawerPosition="left"
-        //   renderNavigationView={DrawerContainer}
-        // >
-          <MenuImage
-            onPress={() => {
-              console.log("trying to add a drawer")
-            }}
-          />
-        // </DrawerLayoutAndroid>
-      ),
       headerTitle: () => (
-        <View><Text>Marketplace</Text></View>
+        <View>
+        <Image style={{width: 100,height: 40}} source={require("../../assets/LogoHeader.png")} />
+      </View>
       ),
-      headerRight: () => (<View>
-        <Image style={styles.HeaderLogo} source={require("../../assets/LogoHeader.png")} />
-      </View>),
+      headerRight: () => (
+      <View>
+          <Image
+            source={{
+              uri:
+                'https://firebasestorage.googleapis.com/v0/b/agri-mart-pid11.appspot.com/o/profilePictures%2FDefault%20profile%20picture%20green.png?alt=media&token=388b1552-9aca-451a-ab99-0e9a11985627',
+            }}
+            style={{ width: 45, height: 45, borderRadius: 30,marginRight:15 }}
+          />
+      </View>
+      ),
     });
-  }, [value]);
+  }, []);
 
   const handleSearch = (text) => {
     if (text == "") {
@@ -107,7 +110,7 @@ export default function HomeScreen(props) {
   };
 
   const onPressRecipe = (item) => {
-    navigation.navigate("Item", { item });
+    navigation.navigate("Item", { item,UserTypeId,UserType });
   };
 
   // const renderRecipes = ({ item }) => (
@@ -121,8 +124,8 @@ export default function HomeScreen(props) {
   // );
 
   const renderRecipes = ({ item }) => (
-    <TouchableHighlight underlayColor="rgba(73,182,77,0.9)" onPress={() => onPressRecipe(item)}>
-      <View style={styles.container}>
+    <TouchableHighlight activeOpacity={0.9} underlayColor="#DDDDDD" onPress={() => onPressRecipe(item)}>
+      <View style={styles.container} >
         <Image style={styles.photo} source={{ uri: item.img[0] }} />
         <Text style={styles.title}>{item.name}</Text>
         {/* <Text style={styles.category}>{getCategoryName(item.categoryId)}</Text> */}
@@ -132,7 +135,7 @@ export default function HomeScreen(props) {
   );
 
   return (
-    <View>
+    <View style={styles.MainContainer}>
 
         <View style={styles.searchContainer}>
           <Image style={styles.searchIcon} source={require("../../assets/search.png")} />
@@ -175,6 +178,12 @@ export default function HomeScreen(props) {
 
 const styles = StyleSheet.create({
   container: ItemCard.container,
+  touchableHighlight:{
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: (SCREEN_WIDTH - 60) / 2,
+    height: 205,
+  },
   photo: ItemCard.photo,
   title: ItemCard.title,
   category: ItemCard.category,
@@ -188,7 +197,7 @@ const styles = StyleSheet.create({
     marginLeft:17,
     flexDirection: "row", 
     alignItems: "center", 
-    backgroundColor: "#D5DAD7", 
+    backgroundColor: "#dfe8e2", 
     borderRadius: 10, 
     width: "90%",
     justifyContent: "space-around",
@@ -199,7 +208,7 @@ const styles = StyleSheet.create({
     tintColor: 'black' 
   },
   searchInput: {
-    backgroundColor: "#D5DAD7",
+    backgroundColor: "#dfe8e2",
     color: "black",
     width: 180,
     height: 50,
@@ -222,5 +231,9 @@ const styles = StyleSheet.create({
     marginTop:10,
     flexDirection: 'row',
     flexWrap: 'wrap',  
-  }
+  },
+  MainContainer:{
+    backgroundColor: 'white',
+    flex: 1
+},
 });

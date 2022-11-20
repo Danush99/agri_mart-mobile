@@ -18,7 +18,7 @@ export const ItemCard = StyleSheet.create({
     alignItems: 'center',
     marginLeft: ITEM_MARGIN,
     marginTop: 20,
-    width: (SCREEN_WIDTH - (recipeNumColums + 1) * ITEM_MARGIN) / recipeNumColums,
+    width: (SCREEN_WIDTH - 60) / 2,
     height: ITEM_HEIGHT + 55,
     borderColor: '#cccccc',
     borderWidth: 0.5,

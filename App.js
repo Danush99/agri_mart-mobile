@@ -20,6 +20,7 @@ import {
   FarmerRegister1,
   FarmerRegister2,
   FarmerRegister3,
+  BuyerRegister,
   ResetPasswordScreen,
   WelcomePage,
   Home,
@@ -35,63 +36,56 @@ import Chart1 from './src/components/Charts/Chart1_Line';
 import Chart4 from './src/components/Charts/Chart4_Pie';
 import Chart5 from './src/components/Charts/Chart5_compBar';
 import TextInputCustom from './src/components/TextInputCustom';
+import Upload from './src/screens/Profile/Upload'
+import FirebaseUpload from './src/screens/Profile/uploadFirebase'
+
+
+
+import { useLogin } from './src/context/LoginProvider';
+import MainNavigator from './route/MainNavigator';
+import UserNavigator from './route/UserNavigator';
+import RoutController from './route/RoutController';
+import LoginProvider from './src/context/LoginProvider';
+
 
 const Stack = createStackNavigator()
 const Drawer = createDrawerNavigator();
 
-function MainNavigator(){
-  <Stack.Navigator initialRouteName="StartScreen" screenOptions={{headerTitleStyle: {fontWeight: 'bold',textAlign: 'center',alignSelf: 'center',flex: 1,}}} >
-  {/* <Stack.Navigator initialRouteName="WelcomePage" screenOptions={{ headerShown: false,}}> */}
-    <Stack.Screen name="WelcomePage" component={WelcomePage} />
-    <Stack.Screen name="Profile" component={Profile} />
-    <Stack.Screen name="Dashboard" component={Dashboard} />
-    <Stack.Screen name="MarketPlace" component={MarketPlace} />
-    <Stack.Screen name="Home" component={Home} />
-  </Stack.Navigator>
-}
-
-function DrawerStack() {
-  return(
-    <Drawer.Navigator
-      drawerPosition='left'
-      initialRouteName='Main'
-      drawerStyle={{
-        width: 250
-      }}
-      screenOptions={{headerShown: false}}
-      drawerContent={({navigation})=> <DrawerContainer navigation={navigation}/>}
-    >
-      <Drawer.Screen name='Main' component={MainNavigator} />
-    </Drawer.Navigator>
-  )
-} 
-
 
 export default function App() {
   return (
-    <Provider theme={theme}>
+    // <Provider theme={theme}>
+    //   <NavigationContainer>
+    //     <Stack.Navigator initialRouteName="Upload" screenOptions={{ headerShown: false,}}>
+    //       {/* <Stack.Screen name="StartScreen" component={StartScreen} />
+    //       <Stack.Screen name="LoginScreen" component={LoginScreen} />
+    //       <Stack.Screen name="FarmerRegister1" component={FarmerRegister1} />
+    //       <Stack.Screen name="FarmerRegister2" component={FarmerRegister2} />
+    //       <Stack.Screen name="FarmerRegister3" component={FarmerRegister3} />
+    //       <Stack.Screen name="BuyerRegister" component={BuyerRegister} />
+    //       <Stack.Screen name="ResetPasswordScreen" component={ResetPasswordScreen}/>
+    //       <Stack.Screen name="WelcomePage" component={WelcomePage} />
+    //       <Stack.Screen name="Profile" component={Profile} />
+    //       <Stack.Screen name="Dashboard" component={Dashboard} />
+    //       <Stack.Screen name="MarketPlace" component={MarketPlace} />
+    //       <Stack.Screen name="Item" component={ItemScreen} />
+    //       <Stack.Screen name="BuyPhase" component={BuyPhase} />
+    //       <Stack.Screen name="Home" component={Home} />
+    //       <Stack.Screen name="Chart1" component={Chart1} />
+    //       <Stack.Screen name="Chart4" component={Chart4} />
+    //       <Stack.Screen name="Chart5" component={Chart5} />
+    //       <Stack.Screen name="Chart5" component={Chart5} /> */}
+    //       {/* <Stack.Screen name="Upload" component={Upload} /> */}
+    //       <Stack.Screen name="FirebaseUpload" component={FirebaseUpload} />
+    //     </Stack.Navigator>
+    //   </NavigationContainer>
+    // </Provider>
+    <LoginProvider>
       <NavigationContainer>
-        <Stack.Navigator initialRouteName="WelcomePage" screenOptions={{ headerShown: false,}}>
-          <Stack.Screen name="StartScreen" component={StartScreen} />
-          <Stack.Screen name="LoginScreen" component={LoginScreen} />
-          <Stack.Screen name="FarmerRegister1" component={FarmerRegister1} />
-          <Stack.Screen name="FarmerRegister2" component={FarmerRegister2} />
-          <Stack.Screen name="FarmerRegister3" component={FarmerRegister3} />
-          <Stack.Screen name="ResetPasswordScreen" component={ResetPasswordScreen}/>
-          <Stack.Screen name="WelcomePage" component={WelcomePage} />
-          <Stack.Screen name="Profile" component={Profile} />
-          <Stack.Screen name="Dashboard" component={Dashboard} />
-          <Stack.Screen name="MarketPlace" component={MarketPlace} />
-          <Stack.Screen name="Item" component={ItemScreen} />
-          <Stack.Screen name="BuyPhase" component={BuyPhase} />
-          <Stack.Screen name="Home" component={Home} />
-          <Stack.Screen name="Chart1" component={Chart1} />
-          <Stack.Screen name="Chart4" component={Chart4} />
-          <Stack.Screen name="Chart5" component={Chart5} />
-          <Stack.Screen name="TextInputCustom" component={TextInputCustom} />
-        </Stack.Navigator>
+        <RoutController/>
       </NavigationContainer>
-    </Provider>
+  </LoginProvider>
   );
 }
 
+//#25B70E
