@@ -13,11 +13,12 @@ import AuthServices from "../services/AuthServices";
 import { useLogin } from '../context/LoginProvider';
 
 export default function LoginScreen({ navigation,route }) {
-  const { setIsLoggedIn, setUser } = useLogin();
+  const { setIsLoggedIn, setUser, setProfile } = useLogin();
   const { handleSubmit, control } = useForm();
   const [errors, setErrors] = useState({ email: '', password: ''})
   const [IsSubmit, setIsSubmit] = useState(false);
   const [FromValues, setFromValues] = useState();
+  const [InvalidFarmer, setInvalidFarmer] = useState(false);
 
   const handleBackendErrors = (errors) => {
     console.log("error : ",errors);
@@ -38,11 +39,17 @@ export default function LoginScreen({ navigation,route }) {
       .then((res) => {
         console.log(res);
         setUser(res.user);
+        setProfile(res.profile);
         setIsLoggedIn(true);
       })
       .catch((err) => {
         console.log("backend error : ",err)
-        handleBackendErrors(err.message)
+        if(err.NotApprove){
+          setInvalidFarmer(true)
+        }else{
+          handleBackendErrors(err.message)
+        }
+
       });
       setIsSubmit(false);
   }
@@ -110,6 +117,8 @@ export default function LoginScreen({ navigation,route }) {
         )}
       />
 
+      {InvalidFarmer?(<View><Text style={styles.err}>Your account is not verified yet !</Text></View>):null}
+
       <View style={styles.forgotPassword}>
         <TouchableOpacity
           onPress={() => navigation.navigate('ResetPasswordScreen')}
@@ -155,4 +164,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: theme.colors.green,
   },
+  err:{
+    left: 0,
+    marginBottom:10,
+    color: 'red',
+  }
 })

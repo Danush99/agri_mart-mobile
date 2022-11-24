@@ -1,5 +1,5 @@
 import React, { useEffect,useLayoutEffect, useRef, useState } from "react";
-import {Modal,Pressable,ScrollView,Text,View,Image,Dimensions,TouchableHighlight,StyleSheet,LogBox,FlatList} from "react-native";
+import {Modal,Pressable,ScrollView,Text,View,Image,Dimensions,TouchableHighlight,StyleSheet,LogBox,FlatList,RefreshControl} from "react-native";
 import Carousel, { Pagination } from "react-native-snap-carousel";
 import { Table, Row, Rows } from 'react-native-table-component';
 import BackButton from '../../components/BackButton'
@@ -19,8 +19,8 @@ const state= {
     tableHead: ['Name', 'Category', 'Availability', 'Orders'],
     tableData: []}
 
-const CarouselImages = ["https://images.unsplash.com/photo-1492496913980-501348b61469?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80","https://images.unsplash.com/photo-1597916829826-02e5bb4a54e0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80","https://images.unsplash.com/photo-1515150144380-bca9f1650ed9?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTV8fGFncmljdWx0dXJlfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60"]
-
+const CarouselImages = ["https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NHx8bWFya2V0fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60","https://images.unsplash.com/photo-1555876484-a71a693b161b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8OXx8bWFya2V0fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60","https://images.unsplash.com/photo-1550989460-0adf9ea622e2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80"]
+const wait = (timeout) => {return new Promise(resolve => setTimeout(resolve, timeout));}
 
 
 export default function MiniMarket(props) {
@@ -30,7 +30,12 @@ export default function MiniMarket(props) {
 
     const [TableData, setTableData] = useState();
     const [AllItems, setAllItems] = useState();
+    const [FlatArray, setFlatArray] = useState();
     const [CountArray, setCountArray] = useState();
+    const [BiddingArray, setBiddingArray] = useState();
+    const [DirectArray, setDirectArray] = useState();
+    const [filterV, setFilterV] = useState("");
+
 
     const slider1Ref = useRef();
     const [activeSlide, setActiveSlide] = useState(0);
@@ -42,6 +47,12 @@ export default function MiniMarket(props) {
         </TouchableHighlight>
       );
 
+    const [refreshing, setRefreshing] = useState(false);
+    const onRefresh = React.useCallback(() => {
+      setRefreshing(true);
+      wait(1000).then(() => setRefreshing(false));
+    }, []);
+      
       useEffect(() => {
         FarmerServices.GetFarmerProducts({_id})
         .then((res) => {
@@ -50,6 +61,8 @@ export default function MiniMarket(props) {
             const Items = res.Items
             const countList = res.countList
             var TemptableData=[]
+            var bidArray=[]
+            var dirArray=[]
 
             for(let x=0;x<Items.length;x++){
                 var dataRow=[]
@@ -59,9 +72,17 @@ export default function MiniMarket(props) {
                 dataRow.push(item.availableAmount)
                 dataRow.push(countList[x])
                 TemptableData.push(dataRow)
+                if(item.bid=="1"){
+                  bidArray.push(item)
+                }else{
+                  dirArray.push(item)
+                }
             }
+            setBiddingArray(bidArray)
+            setDirectArray(dirArray)
             setTableData(TemptableData)
             setAllItems(Items)
+            setFlatArray(Items)
             setCountArray(countList)
 
             console.log("Farmer products getting is success:: ");
@@ -73,7 +94,7 @@ export default function MiniMarket(props) {
         .catch((err) => {
           console.log("backend error : ",err)
         });
-      }, []);
+      }, [refreshing]);
 
 
       const onPressOption = (item) => {
@@ -94,6 +115,19 @@ export default function MiniMarket(props) {
        navigation.navigate("ItemCRUD",{_id,IsUpdate})
       };
     
+      const handleFilter = (buttonName) => {
+        if (buttonName == "All") {
+          setFilterV("All")
+          setFlatArray(AllItems);
+        } else if(buttonName == "Direct_Buying") {
+          setFilterV("Direct_Buying")
+          setFlatArray(DirectArray);
+        } else if(buttonName == "Bidding") {
+          setFilterV("Bidding")
+          setFlatArray(BiddingArray);
+        }
+      };
+
     const renderOption = ({ item }) => (
         <TouchableHighlight activeOpacity={0.9} underlayColor="#DDDDDD" onPress={() => onPressOption(item)} onLongPress={() => screenItem(item)}> 
           <View style={styles.renderItemContainer} >
@@ -105,59 +139,83 @@ export default function MiniMarket(props) {
       );
 
     return (
-    <>
+  <View style={{backgroundColor:"#FFFFFF"}}>
+    <FlatList vertical showsVerticalScrollIndicator={false} numColumns={2} data={FlatArray} renderItem={renderOption} keyExtractor={(option) => `${option._id}`} 
+    
+  refreshControl={
+    <RefreshControl
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+    />}
+
+    ListHeaderComponent={
     <ScrollView style={styles.MainContainer}>
         
-        <View style={styles.carouselContainer}>
-            <View style={styles.carousel}>
-            <Carousel
-                ref={slider1Ref}
-                data={CarouselImages}
-                renderItem={renderImage}
-                sliderWidth={viewportWidth}
-                itemWidth={viewportWidth}
-                inactiveSlideScale={1}
-                inactiveSlideOpacity={1}
-                firstItem={0}
-                loop={false}
-                autoplay={false}
-                autoplayDelay={500}
-                autoplayInterval={3000}
-                onSnapToItem={(index) => setActiveSlide(index)}
-            />
-            <Pagination
-                dotsLength={CarouselImages.length}
-                activeDotIndex={activeSlide}
-                containerStyle={styles.paginationContainer}
-                dotColor="rgba(255, 255, 255, 0.92)"
-                dotStyle={styles.paginationDot}
-                inactiveDotColor="white"
-                inactiveDotOpacity={0.4}
-                inactiveDotScale={0.6}
-                carouselRef={slider1Ref.current}
-                tappableDots={!!slider1Ref.current}
-            />
-            </View>
-        </View>
+      <View style={styles.carouselContainer}>
+          <View style={styles.carousel}>
+          <Carousel
+              ref={slider1Ref}
+              data={CarouselImages}
+              renderItem={renderImage}
+              sliderWidth={viewportWidth}
+              itemWidth={viewportWidth}
+              inactiveSlideScale={1}
+              inactiveSlideOpacity={1}
+              firstItem={0}
+              loop={true}
+              autoplay={true}
+              autoplayDelay={2000}
+              autoplayInterval={3000}
+              onSnapToItem={(index) => setActiveSlide(index)}
+          />
+          <Pagination
+              dotsLength={CarouselImages.length}
+              activeDotIndex={activeSlide}
+              containerStyle={styles.paginationContainer}
+              dotColor="rgba(255, 255, 255, 0.92)"
+              dotStyle={styles.paginationDot}
+              inactiveDotColor="white"
+              inactiveDotOpacity={0.4}
+              inactiveDotScale={0.6}
+              carouselRef={slider1Ref.current}
+              tappableDots={!!slider1Ref.current}
+          />
+          </View>
+      </View>
 
-        <View style={styles.infoItemContainer}>
-            <BackButton goBack={navigation.goBack} />
-            <Text style={styles.infoItemName}>My Market</Text>
-        </View>
-        <MarketButton
-            buttonName="Click here to add Items"
-            onPress={addItem}
-            />
-        <View style={styles.container}>
-            <Table borderStyle={{borderWidth: 2, borderColor: '#c8e1ff'}}>
-            <Row data={state.tableHead} style={styles.head} textStyle={{ margin: 2,textAlign:"center" }}/>
-            <Rows data={TableData} textStyle={{ margin: 6 }}/>
-            </Table>
-        </View>
+      <View style={styles.infoItemContainer}>
+          <BackButton goBack={navigation.goBack} />
+          <Text style={styles.infoItemName}>My Market</Text>
+      </View>
+      <MarketButton
+          buttonName="Click here to add Items"
+          onPress={addItem}
+          />
+      <View style={styles.container}>
+          <Table borderStyle={{borderWidth: 2, borderColor: '#c8e1ff'}}>
+          <Row data={state.tableHead} style={styles.head} textStyle={{ margin: 2,textAlign:"center" }}/>
+          <Rows data={TableData} textStyle={{ margin: 6 }}/>
+          </Table>
+      </View>
 
-        <FlatList vertical showsVerticalScrollIndicator={false} numColumns={2} data={AllItems} renderItem={renderOption} keyExtractor={(option) => `${option._id}`} />
+      <View style={styles.FilterButtonsContainer}>
+          <Pressable onPress={() => handleFilter("All")}>
+            <Text style={[ styles.FilterButtons,filterV === "All" && styles.FilterButtonsSelected, ]}>All</Text>
+          </Pressable>
+          <Pressable onPress={() => handleFilter("Direct_Buying")}>
+            <Text style={[ styles.FilterButtons,filterV === "Direct_Buying" && styles.FilterButtonsSelected, ]}>Direct Buying</Text>
+          </Pressable>
+          <Pressable onPress={() => handleFilter("Bidding")}>
+            <Text style={[ styles.FilterButtons,filterV === "Bidding" && styles.FilterButtonsSelected, ]}>Bidding</Text>
+          </Pressable>
+      </View>
+      
     </ScrollView>
-    </>
+    }
+    
+    />
+  
+  </View>
     )
   }
 
@@ -231,5 +289,19 @@ carouselContainer: {
   photo: ItemCard.photo,
   title: ItemCard.title,
   category: ItemCard.category,
+  FilterButtons:{
+    marginLeft: SCREEN_WIDTH/7,
+  },
+  FilterButtonsSelected:{
+    color: "#25B70E",
+    textDecorationLine: 'underline',
+    marginLeft: SCREEN_WIDTH/7
+  },
+  FilterButtonsContainer:{
+    marginLeft:6,
+    marginTop:10,
+    flexDirection: 'row',
+    flexWrap: 'wrap',  
+  },
 
 });

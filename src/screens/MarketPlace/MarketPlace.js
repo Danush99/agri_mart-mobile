@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useState, useEffect, useRef } from "react";
-import { FlatList, Text, View, TouchableHighlight, Image, StyleSheet, Pressable, DrawerLayoutAndroid,TouchableOpacity,Dimensions } from "react-native";
+import { FlatList, Text, View, TouchableHighlight, Image, StyleSheet, Pressable, DrawerLayoutAndroid,TouchableOpacity,Dimensions,RefreshControl } from "react-native";
 import { NavigationContainer, StackActions } from '@react-navigation/native';
 import { recipes } from "../../data/dataArrays";
 import MenuImage from "../../components/MenuImage";
@@ -11,12 +11,13 @@ import { TextInput } from "react-native-gesture-handler";
 import MarketPlaceServices from "../../services/MarketPlaceServices";
 import { useLogin } from '../../context/LoginProvider'
 
+const defaultProfile='https://firebasestorage.googleapis.com/v0/b/agri-mart-pid11.appspot.com/o/profilePictures%2FDefault%20profile%20picture%20green.png?alt=media&token=388b1552-9aca-451a-ab99-0e9a11985627'
 const { width, height } = Dimensions.get('window');
 // orientation must fixed
 const SCREEN_WIDTH = width < height ? width : height;
-
+const wait = (timeout) => {return new Promise(resolve => setTimeout(resolve, timeout));}
 export default function HomeScreen(props) {
-  const { user } = useLogin();
+  const { user,UserProfile } = useLogin();
   const [UserID, setUserID] = useState(user._id);
   const [TypeId, setTypeId] = useState(user.typeId);
   const [UserType, setUserType] = useState(user.userType);
@@ -33,8 +34,14 @@ export default function HomeScreen(props) {
   const [BidItems, setBidItems] = useState();
   const [CurrentData, setCurrentData] = useState();
 
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    wait(1000).then(() => setRefreshing(false));
+  }, []);
 
   useEffect( ()=> {
+    console.log("Welcome to Market Place")
     MarketPlaceServices.GetMarketItems()
     .then((data)=>{
         //setOfficerDetails(officer[0]);
@@ -49,7 +56,7 @@ export default function HomeScreen(props) {
     .catch((err)=>{
         console.log("error : ",err);
     })
-  },[]);
+  },[refreshing]);
 
 
   useLayoutEffect(() => {
@@ -63,15 +70,14 @@ export default function HomeScreen(props) {
       <View>
           <Image
             source={{
-              uri:
-                'https://firebasestorage.googleapis.com/v0/b/agri-mart-pid11.appspot.com/o/profilePictures%2FDefault%20profile%20picture%20green.png?alt=media&token=388b1552-9aca-451a-ab99-0e9a11985627',
+              uri:(UserProfile.proPicUrl?UserProfile.proPicUrl:defaultProfile)
             }}
             style={{ width: 45, height: 45, borderRadius: 30,marginRight:15 }}
           />
       </View>
       ),
     });
-  }, []);
+  }, [refreshing]);
 
   const handleSearch = (text) => {
     if (text == "") {
@@ -110,7 +116,7 @@ export default function HomeScreen(props) {
   };
 
   const onPressRecipe = (item) => {
-    navigation.navigate("Item", { item,UserTypeId,UserType });
+    navigation.navigate("Item", { item,TypeId,UserType,UserProfile });
   };
 
   // const renderRecipes = ({ item }) => (
@@ -168,7 +174,13 @@ export default function HomeScreen(props) {
           </Pressable>
         </View>
         
-      <FlatList vertical showsVerticalScrollIndicator={false} numColumns={2} data={data} renderItem={renderRecipes} keyExtractor={(item) => `${item._id}`} />
+      <FlatList 
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+            />}
+      vertical showsVerticalScrollIndicator={false} numColumns={2} data={data} renderItem={renderRecipes} keyExtractor={(item) => `${item._id}`} />
       {/* <FlatList vertical showsVerticalScrollIndicator={false} numColumns={2} data={recipes} renderItem={renderRecipes} keyExtractor={(item) => `${item.recipeId}`} /> */}
 
 

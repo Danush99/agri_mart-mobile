@@ -16,9 +16,19 @@ const GetMarketItems = async () => {
     }
 }
 
-const DirectBuying = async(data,item,UserTypeId) => {
+const DirectBuying = async(data,item,UserTypeId,UserProfile,Farmer) => {
     const headers= {Authorization: `Bearer ${token.getAccessToken()}`}
-    const res = await client.post('/market/directBuy',{data:data,item:item,UserTypeId:UserTypeId});
+    const res = await client.post('/market/directBuy',{data:data,item:item,UserTypeId:UserTypeId,UserProfile:UserProfile,Farmer:Farmer});
+    if (res.data.success) {
+        return(res.data);
+    }else{
+        return(res.data.message);
+    }
+}
+
+const checkOrder = async(OrderId,CheckUncheck) => {
+    const headers= {Authorization: `Bearer ${token.getAccessToken()}`}
+    const res = await client.post('/market/checkOrder',{CheckUncheck:CheckUncheck,OrderId:OrderId});
     if (res.data.success) {
         return(res.data);
     }else{
@@ -36,8 +46,32 @@ const GetMarketOrders = async (userId,userType) => {
     }
 }
 
+const getItemBidDetails = async (itemId,buyerId) => {
+    const headers= {Authorization: `Bearer ${token.getAccessToken()}`}
+    const res = await client.post('/market/getItemBidDetails',{itemId:itemId,buyerId:buyerId});
+    if (res.data.success) {
+        return(res.data);
+    }else{
+        return(res.data.message);
+    }
+}
+
+const bidOnItem = async (item,submitAmount,buyerID,farmerID) => {
+    const headers= {Authorization: `Bearer ${token.getAccessToken()}`}
+    const res = await client.post('/market/bidOnItem',{item:item,submitAmount:submitAmount,buyerID,farmerID});
+    if (res.data.success) {
+        return(res.data);
+    }else{
+        return(res.data.message);
+    }
+}
+
+
 export default {
     GetMarketItems ,
     DirectBuying,
-    GetMarketOrders
+    GetMarketOrders,
+    getItemBidDetails,
+    bidOnItem,
+    checkOrder
   }

@@ -98,9 +98,9 @@ const ProfilePicUpload = (data) =>
 //     });
 // }); 
 
-const GetUserProfile = async (data) => {
+const GetUserProfile = async (UserType ,TypeId) => {
   const headers= {Authorization: `Bearer ${token.getAccessToken()}`}
-  const res = await client.post('/user/getProfile',data);
+  const res = await client.post('/user/getProfile',{UserType:UserType ,TypeId:TypeId});
   console.log("user profile data: ",res.data)
   if (res.data.success) {
       return(res.data);

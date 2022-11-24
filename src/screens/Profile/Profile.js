@@ -8,7 +8,9 @@ import React, { useLayoutEffect, useState, useEffect, useRef } from "react";
 import {Modal,StyleSheet,Dimensions,ScrollView,ImageBackground,Platform,View,Image,TouchableOpacity,FlatList,Pressable,ToastAndroid,RefreshControl,} from "react-native";
 import { Block, Text, theme } from "galio-framework";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import DatePicker from 'react-native-date-picker'
+//import DatePicker from 'react-native-date-picker'
+//import DatePicker from 'react-native-datepicker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 //import { Button } from "../../components/Button";
 import { Button,Avatar} from 'react-native-paper'
 import { Images, argonTheme } from "../../constants";
@@ -24,15 +26,16 @@ import FarmerServices from "../../services/FarmerServices";
 import BuyerServices from "../../services/BuyerServices";
 import {useForm, Controller} from 'react-hook-form';
 import MarketButton from "../../components/MarketButton";
+import {DevSettings} from 'react-native';
 
-
+const defaultProfile='https://firebasestorage.googleapis.com/v0/b/agri-mart-pid11.appspot.com/o/profilePictures%2FDefault%20profile%20picture%20green.png?alt=media&token=388b1552-9aca-451a-ab99-0e9a11985627'
 const { width, height } = Dimensions.get("screen");
 const thumbMeasure = (width - 48 - 32) / 3;
 const InitProfile = {"_id": "","firstname": "", "lastname": "","birthday": "","nic_number": "","phone_number":"","crop": "","address": "","officer": "","approval": "","district": "","division": "","postal_Code": "", "proPicUrl": "https://firebasestorage.googleapis.com/v0/b/agri-mart-pid11.appspot.com/o/profilePictures%2FDefault%20profile%20picture.jpg?alt=media&token=9787b121-f2ad-4c18-bc19-03dcc5f99e48"}
 const wait = (timeout) => {return new Promise(resolve => setTimeout(resolve, timeout));}
 
 export default function Profile({ navigation }) {
-  const { user } = useLogin();
+  const { user,UserProfile } = useLogin();
   const [UserID, setUserID] = useState(user._id);
   const [TypeId, setTypeId] = useState(user.typeId);
   const [UserType, setUserType] = useState(user.userType);
@@ -40,12 +43,11 @@ export default function Profile({ navigation }) {
   const { setIsLoggedIn, setUser } = useLogin();
 
   const [Profile, setProfile] = useState(InitProfile);
-  const [proPicUrl, setproPicUrl] = useState();
+  const [proPicUrl, setproPicUrl] = useState(UserProfile.proPicUrl);
   const [Birthday, setBirthday] = useState();
   const { handleSubmit, control } = useForm();
   const [modalVisible, setModalVisible] = useState(false);
   const [AccountmodalVisible, setAccountModalVisible] = useState(false);
-  const [date, setDate] = useState(new Date())
   const [changeProData, setChangeProData] = useState(false);
   const [UpdateData, setUpdateData] = useState(false);
 
@@ -55,8 +57,29 @@ export default function Profile({ navigation }) {
     wait(1000).then(() => setRefreshing(false));
   }, []);
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: () => (
+        <View>
+        <Image style={{width: 100,height: 40}} source={require("../../assets/LogoHeader.png")} />
+      </View>
+      ),
+      headerRight: () => (
+      <View>
+          <Image
+            source={{
+              uri:(proPicUrl?proPicUrl:defaultProfile)
+            }}
+            style={{ width: 45, height: 45, borderRadius: 30,marginRight:15 }}
+          />
+      </View>
+      ),
+    });
+  }, [refreshing]);
+
   useEffect(() => {
-    AuthServices.GetUserProfile({UserType ,TypeId})
+    console.log("profile info: ",UserType,TypeId)
+    AuthServices.GetUserProfile(UserType ,TypeId)
     .then((res) => {
       console.log("user profile data: ",res)
       if(res.success){
@@ -71,7 +94,7 @@ export default function Profile({ navigation }) {
     .catch((err) => {
       console.log("backend error : ",err)
     });
-  }, []);
+  }, [refreshing]);
   
   //gallery pick
   const [galleryPermission, setGalleryPermission] = useState(null);
@@ -126,9 +149,10 @@ export default function Profile({ navigation }) {
     console.log("Logging out...")
     setUser(null)
     setIsLoggedIn(false)
+    //DevSettings.reload();
     navigation.reset({
       index: 0,
-      routes: [{ name: 'StartScreen' }],
+      routes: [{ name: 'Main' }],
     })
   }
 
@@ -146,11 +170,12 @@ export default function Profile({ navigation }) {
 
   useEffect(() => {
     if(changeProData&&UpdateData){
+      UpdateData["birthday"]=date
       AuthServices.UpdateProfile(UpdateData)
       .then((res) => {
         if(res.success){
           setProfile(res.user)
-          setBirthday(res.user.birthday.substring(0, 10))
+          setBirthday(res.user.birthday.substrvng(0, 10))
           console.log("User profile updating is success:: ",res.user);
         }else{
           console.log("backend error : ",res.message)
@@ -163,8 +188,18 @@ export default function Profile({ navigation }) {
     }
   }, [UpdateData,changeProData]);
 
+  const [date, setDate] = useState(new Date());
+  const [DatePickerShow, setDatePickerShow] = useState();
+  function onDateSelected(event, value){
+    const stringDate = value.toString()
+    setDate(value)
+    setBirthday(stringDate)
+    setDatePickerShow(false)
+    console.log("date Value",value)
+  }
+
   return (
-    <ScrollView contentContainerStyle={{backgroundColor: theme.COLORS.WHITE }}
+    <ScrollView contentContainerStyle={{backgroundColor: "#FFFFFF" }} style={{backgroundColor: "#FFFFFF"}} 
     refreshControl={
       <RefreshControl
         refreshing={refreshing}
@@ -198,19 +233,58 @@ export default function Profile({ navigation }) {
                 <Text style={styles.modalHead}>Edit Profile Details</Text>
               </View>
               
-              {/* <Controller
-                name="birthday"
-                defaultValue=""
-                control={control}
-                render={({ field: { onChange, value } }) => (
 
-                  <View style={styles.mainInfoContainer}>
-                  <Text style={styles.detail}>Birthday</Text>
-                  <DatePicker date={date} onDateChange={onChange} mode="date" />
+                <View style={styles.mainInfoContainer}>
+                  <Text style={styles.AccDetail}>Birthday -></Text>
+                  <View style={styles.inputDetails}>
+                    {DatePickerShow&&
+                    <DateTimePicker
+                        value={date}
+                        mode={"date"}
+                        is24Hour={true}
+                        display={Platform.os === 'ios'? 'spinner':'default'}
+                        onChange={onDateSelected}
+                        // placeholder="select date"
+                        // format="DD/MM/YYYY"
+                        // minDate="01-01-1900"
+                        // maxDate="01-01-2000"
+                        // confirmBtnText="Confirm"
+                        // cancelBtnText="Cancel"
+                        // customStyles={{
+                        //   dateIcon: {
+                        //     position: 'absolute',
+                        //     right: -5,
+                        //     top: 4,
+                        //     marginLeft: 0,
+                        //   },
+                        //   dateInput: {
+                        //     borderColor : "gray",
+                        //     alignItems: "flex-start",
+                        //     borderWidth: 0,
+                        //     borderBottomWidth: 1,
+                        //   },
+                        //   placeholderText: {
+                        //     fontSize: 17,
+                        //     color: "gray"
+                        //   },
+                        //   dateText: {
+                        //     fontSize: 17,
+                        //   }
+                        // }}
+                      />
+                    }
+                    <View>
+                      <Pressable
+                        //style={[styles.button, styles.buttonClose]}
+                        onPress={()=>{setDatePickerShow(true)}}
+                        >
+                        <MaterialCommunityIcons name="calendar" size={30} />
+                      </Pressable>
+                    </View>
                   </View>
+              </View>
 
-                )}
-                /> */}
+
 
                 <Controller
                 name="firstname"
@@ -220,12 +294,16 @@ export default function Profile({ navigation }) {
 
                   <View style={styles.mainInfoContainer}>
                   <Text style={styles.AccDetail}>First name</Text>
+                  <View style={styles.inputDetails}>
                   <TextInput
+                      style={styles.inputDetails2}
                       placeholder="First name"
                       onChangeText={onChange}
                       value={value}
                     />
                   </View>
+                  </View>
+
 
                 )}
                 />
@@ -237,62 +315,119 @@ export default function Profile({ navigation }) {
                 render={({ field: { onChange, value } }) => (
                   <View style={styles.mainInfoContainer}>
                   <Text style={styles.AccDetail}>Last name</Text>
+                  <View style={styles.inputDetails}>
                   <TextInput
+                      style={styles.inputDetails2}
                       placeholder="Last name"
                       onChangeText={onChange}
                       value={value}
                     />
                   </View>
+                  </View>
                 )}
                 />
 
+                <Controller
+                name="phone_number"
+                defaultValue={Profile.phone_number}
+                control={control}
+                render={({ field: { onChange, value} }) => (
+                  <View style={styles.mainInfoContainer}>
+                  <Text style={styles.AccDetail}>Mobile</Text>
+                  <View style={styles.inputDetails}>
+                  <TextInput
+                      style={styles.inputDetails2}
+                      placeholder="Mobile number"
+                      onChangeText={onChange}
+                      value={value}
+                    />
+                  </View>
+                  </View>
+                )}
+                />
+
+              <Controller
+                name="nic_number"
+                defaultValue={Profile.nic_number}
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <View style={styles.mainInfoContainer}>
+                  <Text style={styles.AccDetail}>NIC Number</Text>
+                  <View style={styles.inputDetails}>
+                  <TextInput
+                      style={styles.inputDetails2}
+                      placeholder="NIC number"
+                      onChangeText={onChange}
+                      value={value}
+                    />
+                  </View>
+                  </View>
+                )}
+                />
+
+              {UserType=="farmer"?
+              <>
               <Controller
                 name="crop"
                 defaultValue={Profile.crop}
                 control={control}
                 render={({ field: { onChange, value } }) => (
-                  <View style={styles.mainInfoContainer}>
-                  <Text style={styles.AccDetail}>Crops you grow</Text>
-                  <TextInput
-                      placeholder="Crops you grow"
-                      onChangeText={onChange}
-                      value={value}
-                    />
-                  </View>
-                )}
-                />
+                <View style={styles.mainInfoContainer}>
+                <Text style={styles.AccDetail}>Crops you grow</Text>
+                <View style={styles.inputDetails}>
+                <TextInput
+                    style={styles.inputDetails2}
+                    placeholder="Crops you grow"
+                    onChangeText={onChange}
+                    value={value}
+                  />
+                </View>
+                </View>
+              )}
+              />
+
+            <Controller
+              name="address"
+              defaultValue={Profile.address}
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <View style={styles.mainInfoContainer}>
+                <Text style={styles.AccDetail}>Address</Text>
+                <View style={styles.inputDetails}>
+                <TextInput
+                    style={[styles.inputDetails2,{width:170,hight:25}]}
+                    placeholder="Address"
+                    onChangeText={onChange}
+                    value={value}
+                    numberOfLines={2}
+                    multiline={true}
+                  />
+                </View>
+                </View>
+              )}
+              />
 
               <Controller
-                name="address"
-                defaultValue={Profile.address}
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                  <View style={styles.mainInfoContainer}>
-                  <Text style={styles.AccDetail}>Address</Text>
-                  <TextInput
-                      placeholder="Address"
-                      onChangeText={onChange}
-                      value={value}
-                    />
-                  </View>
-                )}
-                />
-
-              <Controller
-                name="postal_Code"
-                defaultValue={Profile.postal_Code}
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                  <View style={styles.mainInfoContainer}>
-                  <Text style={styles.AccDetail}>Postal code</Text>
-                  <TextInput
-                      placeholder="Postal code"
-                      onChangeText={onChange}
-                      value={value}
-                    />
-                  </View>
-                )}
-                />
+              name="postal_Code"
+              defaultValue={""}
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <View style={styles.mainInfoContainer}>
+                <Text style={styles.AccDetail}>Postal code</Text>
+                <View style={styles.inputDetails}>
+                <TextInput
+                    style={styles.inputDetails2}
+                    placeholder="Postal code"
+                    onChangeText={onChange}
+                    value={value}
+                  />
+                </View>
+                </View>
+              )}
+              />
+            
+              </>
+              :null}
 
                 <MarketButton
                   buttonName="Confirm"
@@ -478,7 +613,7 @@ export default function Profile({ navigation }) {
 
               <View style={styles.mainInfoContainer}>
               <Text style={styles.bDetail}>Farm Adress      </Text>
-              <Text style={styles.detailValue}>{Profile.address}</Text>
+              <Text style={[styles.detailValue,{width:200,hight:23}]}>{Profile.address}</Text>
               </View>
 
               <View style={styles.mainInfoContainer}>
@@ -526,8 +661,8 @@ export default function Profile({ navigation }) {
           
         </Block>
 
- 
       </Block>
+
     </ScrollView>
   )
 }
@@ -557,7 +692,7 @@ const styles = StyleSheet.create({
     marginTop: 80,
     //borderTopLeftRadius: 6,
     //borderTopRightRadius: 6,
-    backgroundColor: theme.COLORS.WHITE,
+    backgroundColor: "#FFFFFF",
     shadowColor: "black",
     shadowOffset: { width: 0, height: 0 },
     shadowRadius: 8,
@@ -575,7 +710,9 @@ const styles = StyleSheet.create({
     width: 124,
     height: 124,
     borderRadius: 62,
-    borderWidth: 0
+    borderWidth: 2,
+    borderColor:"black",
+    marginBottom:-50
   },
   submitAvatar:{
     width: 70,
@@ -677,7 +814,7 @@ const styles = StyleSheet.create({
   AccDetail:{
     fontWeight: 'bold',
     marginTop:5,
-    marginRight:7
+    marginLeft:20
   },
   detailValue:{
     
@@ -694,7 +831,19 @@ const styles = StyleSheet.create({
   },
   options:{
     marginLeft:5
-  }
+  },
+  inputDetails:{
+    flex:2,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginLeft:-10
+},
+inputDetails2:{
+  flex:2,
+  flexDirection: 'row',
+  justifyContent: 'flex-end',
+  marginLeft:30
+},
 });
 
 

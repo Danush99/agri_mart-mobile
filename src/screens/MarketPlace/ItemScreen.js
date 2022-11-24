@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef, useState } from "react";
+import React, { useLayoutEffect, useRef, useState, useEffect } from "react";
 import {Modal,Pressable,ScrollView,Text,View,Image,Dimensions,TouchableHighlight,StyleSheet,LogBox} from "react-native";
 //import ReactDOM from "react-dom";
 import CountDown from 'react-native-countdown-component';
@@ -11,6 +11,8 @@ import ItemBackButton from "../../components/ItemBackButton";
 import BackButton from '../../components/BackButton'
 import MarketButton from "../../components/MarketButton";
 import { TextSize } from "victory-native";
+import MarketPlaceServices from "../../services/MarketPlaceServices";
+
 const { width: viewportWidth } = Dimensions.get("window");
 
 export default function ItemScreen(props) {
@@ -20,27 +22,76 @@ export default function ItemScreen(props) {
   
   const { handleSubmit, control } = useForm();
   const item = route.params?.item;
-  const UserTypeId = route.params?.UserTypeId;
+  const UserTypeId = route.params?.TypeId;
   const UserType = route.params?.UserType;
+  const UserProfile = route.params?.UserProfile;
   const [activeSlide, setActiveSlide] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
+
   const [isBid, setIsBid] = useState((item.bid=="1")?true:false);
   const [isHighest, setIsHighest] = useState(false);
+  const [HighestBid, setHighestBid] = useState();
+  const [BuyerCurrentBid, setBuyerCurrentBid] = useState();
+  const [TotalBidCount, setTotalBidCount] = useState();
+  //const [IsBidSold, setIsBidSold] = useState();
+  const [BidAvailableToBuy, setBidAvailableToBuy] = useState();
   const [BidFinish, setBidFinish] = useState(false);
+  const [CanBuy, setCanBuy] = useState(false);
+  const diffTime = Math.ceil(Math.abs(now - postedDate)/1000);
+  const [BidRestTime, setBidRestTime] = useState(item.bidPeriod>diffTime?item.bidPeriod-diffTime:0.5);
+
   const slider1Ref = useRef();
   const postedDate = new Date(item.postedDate);
   const now = new Date();
-  const diffTime = Math.ceil(Math.abs(now - postedDate)/1000);
+  
 
-//   useLayoutEffect(() => {
-//     navigation.setOptions({
-//       headerTransparent: "true",
-//       headerLeft: () => (<BackButton  onPress={() => {navigation.goBack()}} />),
-//       headerRight: () => (<View>
-//         <Image style={styles.HeaderLogo} source={require("../../assets/LogoHeader.png")} />
-//       </View>),
-//     });;
-//   }, []);
+useEffect(() => {
+  console.log("bidding::::::::",isBid)
+
+  if(isBid){
+    MarketPlaceServices.getItemBidDetails(item._id,UserProfile._id)
+    .then((data)=>{
+      //setIsBidSold(data.bidObject.isSold)
+      if((data.bidObject.isSold)=="true"){
+        setBidAvailableToBuy(false)
+      }else{
+        setBidAvailableToBuy(true)
+      }
+      
+      setTotalBidCount(data.BidData.totalBidderCount)
+      setHighestBid(data.BidData.maxBidValue)
+      if(data.buyerAlreadyBid){
+        setBuyerCurrentBid(data.BidData.buyerBidValue)
+        if(data.BidData.maxBidValue==data.BidData.buyerBidValue){
+          setIsHighest(true)
+        }else{
+          setIsHighest(false)
+        }
+      }else{
+        setBuyerCurrentBid(false)
+      }
+  
+      console.log("item bid details: ",data)
+    })
+    .catch((err)=>{
+        console.log("error : ",err);
+    })
+  }
+
+}, []);
+
+console.log("-------------------------------------")
+console.log("bidding",isBid)
+console.log("isHighest",isHighest)
+console.log("HighestBid",HighestBid)
+console.log("BuyerCurrentBid",BuyerCurrentBid)
+console.log("TotalBidCount",TotalBidCount)
+//console.log("IsBidSold",IsBidSold)
+console.log("BidAvailableToBuy",BidAvailableToBuy)
+console.log("BidFinish",BidFinish)
+console.log("BidRestTime",BidRestTime)
+console.log("Can you buy the item",(isBid&&isHighest&&BidFinish&&!BidAvailableToBuy))
+console.log("-------------------------------------")
 
 useLayoutEffect(() => {
     navigation.setOptions({
@@ -66,6 +117,18 @@ useLayoutEffect(() => {
 
   const onSubmit = (data) => {
     setModalVisible(!modalVisible)
+    const submitAmount = data.amount
+    console.log("data front end: ",item,submitAmount,UserTypeId,item.farmerID)
+    MarketPlaceServices.bidOnItem(item,submitAmount,UserTypeId,item.farmerID)
+    .then((res)=>{
+      console.log(res.message)
+    })
+    .catch((err)=>{
+      console.log(err)
+    })
+    // const UserType = "buyer"
+    // const TypeId = UserTypeId
+    // navigation.navigate("MyOrders",{TypeId,UserType})
     //const allData = Object.assign({}, formdata, data);
     console.log("data",data);
     //navigation.navigate('FarmerRegister3', { formID: 2,formdata: allData,})
@@ -84,10 +147,10 @@ useLayoutEffect(() => {
             inactiveSlideScale={1}
             inactiveSlideOpacity={1}
             firstItem={0}
-            loop={false}
-            autoplay={false}
-            autoplayDelay={500}
-            autoplayInterval={3000}
+            loop={true}
+            autoplay={true}
+            autoplayDelay={2000}
+            autoplayInterval={2000}
             onSnapToItem={(index) => setActiveSlide(index)}
           />
           <Pagination
@@ -127,7 +190,22 @@ useLayoutEffect(() => {
           <Text style={{}}>Rs.{item.price}/=</Text>
           </View>
           <Text style={styles.detail}>{"("}Unit price{")"} </Text>
+          <View style={styles.mainInfoContainer}>
+          <Text style={styles.detail}>Bidders count  </Text>
+          <Text style={{}}>{TotalBidCount==null?"0":TotalBidCount}</Text>
           </View>
+          <View style={styles.mainInfoContainer}>
+          <Text style={styles.detail}>Highest bid price  </Text>
+          <Text style={{}}>Rs.{HighestBid==null?"0":HighestBid}/=</Text>
+          </View>
+          <Text style={styles.detail}>{"("}Unit price{")"} </Text>
+          <View style={styles.mainInfoContainer}>
+          <Text style={styles.detail}>Your current bid price  </Text>
+          <Text style={{}}>Rs.{(BuyerCurrentBid==null?"0":BuyerCurrentBid)}/=</Text>
+          </View>
+          <Text style={styles.detail}>{"("}Unit price{")"} </Text>
+          </View>
+          
           :          
           <View style={styles.mainInfoContainer}>
           <Text style={styles.detail}>Unit price{"("}{item.unit}{")"}  </Text>
@@ -139,23 +217,24 @@ useLayoutEffect(() => {
         </View>
 
         {isBid?
+            <>
             <View style={styles.infoContainer}>
                 <Text style={styles.category}>
                     Bid expires after
                 </Text>
-            </View>:null
-        }
-
-        {isBid?
+            </View>
             <View style={styles.infoContainer}>
                 <CountDown
-                until={item.bidPeriod-diffTime}
-                //until={20}
+                //until={item.bidPeriod-diffTime}
+                until={BidRestTime}
+                //until={5}
                 onFinish={() => {alert('Bidding Item Is Expired'),setBidFinish(true)}}
                 
                 size={20}
                 />
-            </View>:null
+            </View>
+            </>:null
+            
         }
 
 
@@ -200,7 +279,6 @@ useLayoutEffect(() => {
 
                     <View style={styles.mainInfoContainer}>
                     <Text style={{color:"black",textDecorationLine: 'underline'}}>Information:</Text>
-                    <Text style={{color:"red"}}>34 people have bid on this Item</Text>
                     <Text style={{color:"red"}}>You are bidding on the whole stock</Text>
                     </View>
 
@@ -220,7 +298,7 @@ useLayoutEffect(() => {
                     </View>
                     <InputSpinner
                         max={item.availableAmount*1000}
-                        min={item.price}
+                        min={BuyerCurrentBid?BuyerCurrentBid:item.price}
                         step={20}
                         prepend={<Text style={{paddingLeft:40}}>Rs.</Text>}
                         append={<Text style={{paddingRight:20}}>/=</Text>}
@@ -240,45 +318,62 @@ useLayoutEffect(() => {
                 </View>
               </Modal>
             
-          <MarketButton
-              buttonName="Bid for the Item"
-              onPress={() =>{
-                  setModalVisible(true)
-              }}
-          />
-          </View>:null
-        }
-
-        {BidFinish?
-          <View style={styles.infoContainer}>
-              <Text style={styles.expireMsg}>
-                  We are sorry, this item bidding period has expired!
-              </Text>
-          </View>:null
-        }
-
-        {isBid?null:
-            <View style={styles.infoContainer}>
+          {UserType=="buyer"?
             <MarketButton
-                buttonName="Buy the item"
-                onPress={() => {
-                let availableAmount = item.availableAmount
-                let title = "Ingredients for " + item.name
-                navigation.navigate("BuyPhase", { item,UserTypeId });
-                }}
+            buttonName="Bid for the Item"
+            onPress={() =>{
+                setModalVisible(true)
+            }}
             />
+          :
+            <Text style={styles.expireMsg}>If you want to buy this item you have to signup as a buyer!</Text>
+          }
+
+          </View>:null
+        }
+
+
+        {isBid?
+            null
+        :
+            <View style={styles.infoContainer}>
+                {UserType=="buyer"?
+                  <MarketButton
+                  buttonName="Buy the item"
+                  onPress={() => {
+                  let availableAmount = item.availableAmount
+                  let title = "Ingredients for " + item.name
+                  navigation.navigate("BuyPhase", { item,UserTypeId,UserProfile,isBid });
+                  }}
+                  />
+                :
+                <Text style={styles.expireMsg}>If you want to buy this item you have to signup as a buyer!</Text>
+                }
             </View>
         }
 
-        {isHighest&&BidFinish?
-            <View style={styles.infoContainer}>
-            <MarketButton
-                buttonName="Congratulations! Click here to order this item"
-                onPress={() => {
-                  navigation.navigate("MyOrders");}}
-            />
-            </View>:null
+        {isBid&&isHighest&&BidFinish&&BidAvailableToBuy?
+            <>
+              <Text style={{fontSize: 20,fontWeight: 'bold',marginTop: 15,marginBottom:-15,color: '#B021B7',textAlign: 'center'}}>Congratulations! You are the highest Bidder</Text>
+              <View >
+                <MarketButton
+                    buttonName="Lets Buy!"
+                    onPress={() => {
+                      navigation.navigate("BuyPhase", { item,UserTypeId,UserProfile,isBid,BuyerCurrentBid });}}
+                />
+              </View>
+            </>:      
+            <>  
+            {isBid&&BidFinish?
+              <View style={styles.infoContainer}>
+                <Text style={styles.expireMsg}> We are sorry, this item bidding period has expired!</Text>
+              </View>:null  
+            }
+            </>
         }
+
+
+        
         <View style={styles.infoContainer}>
           <Text style={styles.desc}>
               About the Item:

@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef, useState } from "react";
+import React, { useLayoutEffect, useRef, useState, useEffect } from "react";
 import {Modal,Pressable,ScrollView,Text,View,Image,Dimensions,TouchableHighlight,StyleSheet,LogBox,} from "react-native";
 import {useForm, Controller} from 'react-hook-form';
 //import ReactDOM from "react-dom";
@@ -15,6 +15,7 @@ import Button from '../../components/Button'
 import InputSpinner from "react-native-input-spinner";
 import Logo from '../../components/Logo'
 import MarketPlaceServices from "../../services/MarketPlaceServices";
+import AuthServices from "../../services/AuthServices";
 
 
 
@@ -25,15 +26,30 @@ export default function BuyPhase(props) {
   const { navigation, route } = props;
   const item = route.params?.item;
   const UserTypeId = route.params?.UserTypeId;
+  const UserProfile = route.params?.UserProfile;
+  const isBid = route.params?.isBid;
+  const BuyerCurrentBid = (isBid?(route.params?.BuyerCurrentBid):null)
+  const [Farmer, setFarmer] = useState();
   const [activeSlide, setActiveSlide] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
-  const [isBid, setIsBid] = useState((item.bid=="1")?true:false);
   const [isHighest, setIsHighest] = useState(false);
   const [BidFinish, setBidFinish] = useState(false);
   const [IsPickup, setIsPickup] = useState(false);
   const [IsDelivery, setIsDelivery] = useState(false);
   const { handleSubmit, control } = useForm();
   const slider1Ref = useRef();
+
+  useEffect(() => {
+    const ItemOwner = "farmer"
+    AuthServices.GetUserProfile(ItemOwner,item.farmerID)
+    .then((res)=>{
+      console.log("Farmer : ",res.user)
+      setFarmer(res.user)
+    })
+    .catch((err)=>{
+      console.log("error : ",err);
+  })
+  }, []);
 //   useLayoutEffect(() => {
 //     navigation.setOptions({
 //       headerTransparent: "true",
@@ -61,7 +77,7 @@ export default function BuyPhase(props) {
   const onSubmit = (data) => {
     const allData = Object.assign({}, data, {IsDelivery:IsDelivery});
     console.log("data::::::::  ,",data);
-    MarketPlaceServices.DirectBuying(allData,item,UserTypeId)
+    MarketPlaceServices.DirectBuying(allData,item,UserTypeId,UserProfile,Farmer)
     .then((res)=>{
       console.log(res)
     })
@@ -70,7 +86,10 @@ export default function BuyPhase(props) {
     })
     const UserType = "buyer"
     const TypeId = UserTypeId
-    navigation.navigate("MyOrders",{TypeId,UserType})
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Main' }],
+    })
   };
 
 
@@ -92,10 +111,13 @@ export default function BuyPhase(props) {
           <Text style={{}}>{item.availableAmount} {item.unit}</Text>
           </View>
 
+          {!isBid?          
           <View style={styles.infoContainer}>
           <Text style={styles.detail}>Unit price{"("}{item.unit}{")"}  </Text>
           <Text style={{}}>Rs.{item.price}/=</Text>
           </View>
+          :null}
+
           
         </View>
 
@@ -127,44 +149,23 @@ export default function BuyPhase(props) {
         />
         </View>
 
-        <View>
+        <View style={{marginTop:10}}>
 
             <Controller
-            name="name"
+            name="desc"
             defaultValue=""
             control={control}
             render={({ field: { onChange, value } }) => (
-            <TextInput
-                placeholder="Name"
-                onChangeText={onChange}
-                value={value}
-            />
-            )}
-            />
-
-            <Controller
-            name="m_Number"
-            defaultValue=""
-            control={control}
-            render={({ field: { onChange, value } }) => (
-            <TextInput
-                placeholder="Mobile Number"
-                onChangeText={onChange}
-                value={value}
-            />
-            )}
-            />
-
-            <Controller
-            name="email"
-            defaultValue=""
-            control={control}
-            render={({ field: { onChange, value } }) => (
-            <TextInput
-                placeholder="Email"
-                onChangeText={onChange}
-                value={value}
-            />
+            <>
+              <Text>Note:</Text>
+              <TextInput
+                  placeholder="(Optional)"
+                  onChangeText={onChange}
+                  value={value}
+                  numberOfLines={3}
+                  multiline={true}
+              />
+            </>
             )}
             />
 
@@ -174,42 +175,91 @@ export default function BuyPhase(props) {
             defaultValue=""
             control={control}
             render={({ field: { onChange, value } }) => (
-            <TextInput
-                placeholder="Your Address"
-                onChangeText={onChange}
-                value={value}
-                numberOfLines={3}
-                multiline={true}
-            />
+            <>
+              <Text>Delivery Address:</Text>
+              <TextInput
+                  placeholder="Your Address"
+                  onChangeText={onChange}
+                  value={value}
+                  numberOfLines={3}
+                  multiline={true}
+              />
+            </>
             )}
             />:null
             }
 
-            <Controller
-            name="amount"
-            defaultValue=""
-            control={control}
-            render={({ field: { onChange, value } }) => (
-            <InputSpinner
-                max={item.availableAmount*1000}
-                min={100}
-                step={100}
-                prepend={<Text style={{paddingLeft:40}}>Amount</Text>}
-                append={<Text style={{paddingRight:40}}>g</Text>}
-                value={value}
-                onChange={onChange}
-            />
-            )}
-            />
+            {isBid?
+            <View style={styles.itemDetails}>
+              <View style={styles.infoContainer}>
+                  <Text style={styles.detail}>Unit Price</Text>
+                  <Text style={{width:200,height:40,marginLeft:5}}>{BuyerCurrentBid}</Text>
+              </View>
+              <View style={styles.infoContainer}>
+                  <Text style={styles.detail}>Total Bill</Text>
+                  <Text style={{width:200,height:40,marginLeft:5,textDecorationLine: 'underline'}}>Rs. {item.availableAmount*BuyerCurrentBid} /=</Text>
+              </View>
+            </View>
+
+              :
+
+              <View style={styles.itemDetails}>
+                <Controller
+                    name="amount"
+                    defaultValue=""
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                    <>
+
+                    {item.unit.toLowerCase()=="kg"?
+                        <>
+                        <InputSpinner
+                          max={item.availableAmount*1000}
+                          min={100}
+                          step={100}
+                          prepend={<Text style={{paddingLeft:40}}>Amount</Text>}
+                          append={<Text style={{paddingRight:40}}>g</Text>}
+                          value={value}
+                          onChange={onChange}
+                        />
+                        <View style={styles.infoContainer}>
+                        <Text style={styles.detail}>Total Bill</Text>
+                        <Text style={{width:200,height:40,marginLeft:5,textDecorationLine: 'underline'}}>Rs. {item.price*value/1000} /=</Text>
+                        </View>
+                        </>
+                        :
+                        <>
+                        <InputSpinner
+                          max={item.availableAmount}
+                          min={1}
+                          step={1}
+                          prepend={<Text style={{paddingLeft:40}}>Amount</Text>}
+                          append={<Text style={{paddingRight:40}}>-</Text>}
+                          value={value}
+                          onChange={onChange}
+                        />
+                        <View style={styles.infoContainer}>
+                        <Text style={styles.detail}>Total Bill</Text>
+                        <Text style={{width:200,height:40,marginLeft:5,textDecorationLine: 'underline'}}>Rs. {item.price*value} /=</Text>
+                        </View>
+                        </>
+                    }
+                    </>
+                    )}
+                />
+              </View>
+            }
 
 
             {IsPickup?
             <View style={styles.itemDetails}>
                 <View style={styles.infoContainer}>
-                    <Text style={styles.detail}>Farm address:   </Text>
+                    <Text style={styles.detail}>Farm address:</Text>
+                    <Text style={{width:200,height:40,marginLeft:5}}>{Farmer.address}</Text>
                 </View>
                 <View style={styles.infoContainer}>
-                    <Text style={styles.detail}>Farmer's mobile number:   </Text>
+                    <Text style={styles.detail}>Farmer's mobile number:  </Text>
+                    <Text >0{Farmer.phone_number} </Text>
                 </View>
             </View>:null
             }

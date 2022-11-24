@@ -41,6 +41,7 @@ export default function ItemCRUD(props) {
     const [IsBid, setIsBid] = useState(IsBiding);
     const [IsDirectB, setIsDirectB] = useState(false);
     const [BidDays, setBidDays] = useState();
+    CrudItem["bidPeriod"] = Math.ceil(CrudItem.bidPeriod/(60*60*24))
     //     if(IsUpdate){
     //         console.log("Item:: ",CrudItem)
     //         const postedDate = new Date(item.postedDate);
@@ -102,6 +103,7 @@ export default function ItemCRUD(props) {
             if(res.success){
                 console.log(res.message);
                 if(!(blob1==null&&blob2==null&&blob3==null)){
+                    console.log("there are images to upload",ImgPathArray)
                     UpdateItemImg(ImgPathArray,BlobArray,item._id)
                 }
             }else{
@@ -112,7 +114,8 @@ export default function ItemCRUD(props) {
             console.log("backend error : ",err)
           });
         console.log("Submitted")
-        navigation.navigate("MiniMarket",{farmerID})
+        const IsUpdated =true
+        navigation.navigate("MiniMarket",{farmerID,IsUpdated})
 
     };
 
@@ -285,7 +288,7 @@ export default function ItemCRUD(props) {
                 <>
                 <Controller
                 name="bidPeriodD"
-                defaultValue={Math.ceil(CrudItem.bidPeriod/(60*60*24))}
+                defaultValue={CrudItem.bidPeriod}
                 control={control}
                 render={({ field: { onChange, value } }) => (
                 <View style={styles.mainInfoContainer}>

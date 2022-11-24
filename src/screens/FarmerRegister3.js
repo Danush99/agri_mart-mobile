@@ -12,6 +12,8 @@ import DateField from 'react-native-datefield';
 import {useForm, Controller} from 'react-hook-form';
 import AuthServices from "../services/AuthServices";
 import client from '../services/client';
+import { useLogin } from '../context/LoginProvider';
+
 
 
 
@@ -22,6 +24,8 @@ export default function FarmerRegister3({ navigation,route }) {
   const [errors, setErrors] = useState(allErrors)
   const [IsSubmit, setIsSubmit] = useState(false);
   const [FromValues, setFromValues] = useState();
+  const { setIsLoggedIn, setUser } = useLogin();
+
 
   useEffect(() => {
     setErrors(allErrors)
@@ -43,9 +47,11 @@ export default function FarmerRegister3({ navigation,route }) {
 
   useEffect(() => {
     if (IsSubmit) {
+      console.log("formValues",FromValues)
       AuthServices.RegisterFarmer(FromValues)
       .then((msg) => {
         console.log(msg);
+        navigation.navigate("LoginScreen")
       })
       .catch((err) => {
         handleBackendErrors(err.message)

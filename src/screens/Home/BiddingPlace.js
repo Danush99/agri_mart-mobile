@@ -11,7 +11,7 @@ const state= {
     tableHead: ['Item name', 'Max bid', 'Max bidders count', 'Bid Count'],
     tableData: []}
 
-const CarouselImages = ["https://images.unsplash.com/photo-1492496913980-501348b61469?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80","https://images.unsplash.com/photo-1597916829826-02e5bb4a54e0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80","https://images.unsplash.com/photo-1515150144380-bca9f1650ed9?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTV8fGFncmljdWx0dXJlfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60"]
+const CarouselImages = ["https://images.unsplash.com/photo-1559379537-6c816c8f1168?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTh8fGF1Y3Rpb258ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60","https://images.unsplash.com/photo-1516321497487-e288fb19713f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8YXVjdGlvbnxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60","https://plus.unsplash.com/premium_photo-1661488304619-7ce12da34bc3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8N3x8YXVjdGlvbnxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60"]
 
 export default function BiddingPlace(props) {
     const { navigation, route } = props;
@@ -95,10 +95,10 @@ export default function BiddingPlace(props) {
                 inactiveSlideScale={1}
                 inactiveSlideOpacity={1}
                 firstItem={0}
-                loop={false}
-                autoplay={false}
-                autoplayDelay={500}
-                autoplayInterval={3000}
+                loop={true}
+                autoplay={true}
+                autoplayDelay={2000}
+                autoplayInterval={2000}
                 onSnapToItem={(index) => setActiveSlide(index)}
             />
             <Pagination

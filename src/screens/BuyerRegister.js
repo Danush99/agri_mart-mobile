@@ -12,6 +12,8 @@ import DateField from 'react-native-datefield';
 import {useForm, Controller} from 'react-hook-form';
 import AuthServices from "../services/AuthServices";
 import client from '../services/client';
+import { useLogin } from '../context/LoginProvider';
+
 
 
 
@@ -21,6 +23,8 @@ export default function BuyerRegister({ navigation }) {
   const [errors, setErrors] = useState({ lastname:'',firstname:'',email: '', password1: '',password2:'',phone_number:''})
   const [IsSubmit, setIsSubmit] = useState(false);
   const [FromValues, setFromValues] = useState();
+  const { setIsLoggedIn, setUser } = useLogin();
+
 
   const handleBackendErrors = (errors) => {
     console.log("error : ",errors);
@@ -41,6 +45,7 @@ export default function BuyerRegister({ navigation }) {
       AuthServices.RegisterBuyer(FromValues)
       .then((msg) => {
         console.log(msg);
+        navigation.navigate("LoginScreen")
       })
       .catch((err) => {
         handleBackendErrors(err.message)

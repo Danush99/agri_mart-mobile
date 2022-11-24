@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useState, useEffect, useRef } from "react";
-import { FlatList, Text, View, TouchableHighlight, Image, StyleSheet, Pressable, DrawerLayoutAndroid,TouchableOpacity,Dimensions } from "react-native";
+import { FlatList, Text, View, TouchableHighlight, Image, StyleSheet, Pressable, DrawerLayoutAndroid,TouchableOpacity,Dimensions,RefreshControl } from "react-native";
 import Background from '../../components/Background'
 import Logo from '../../components/Logo'
 import Header from '../../components/Header'
@@ -9,11 +9,13 @@ import { useLogin } from '../../context/LoginProvider'
 import Video from 'react-native-video';
 import { ItemCard } from '../../Styles/AppStyles';
 
+const defaultProfile='https://firebasestorage.googleapis.com/v0/b/agri-mart-pid11.appspot.com/o/profilePictures%2FDefault%20profile%20picture%20green.png?alt=media&token=388b1552-9aca-451a-ab99-0e9a11985627'
 const { width, height } = Dimensions.get('window');
 // orientation must fixed
 const SCREEN_WIDTH = width < height ? width : height;
+const wait = (timeout) => {return new Promise(resolve => setTimeout(resolve, timeout));}
 export default function Home({ navigation }) {
-  const { user } = useLogin();
+  const { user,UserProfile } = useLogin();
   const [UserID, setUserID] = useState(user._id);
   const [TypeId, setTypeId] = useState(user.typeId);
   const [UserType, setUserType] = useState(user.userType);
@@ -29,19 +31,19 @@ export default function Home({ navigation }) {
       <View>
           <Image
             source={{
-              uri:
-                'https://firebasestorage.googleapis.com/v0/b/agri-mart-pid11.appspot.com/o/profilePictures%2FDefault%20profile%20picture%20green.png?alt=media&token=388b1552-9aca-451a-ab99-0e9a11985627',
+              uri:(UserProfile.proPicUrl?UserProfile.proPicUrl:defaultProfile)
             }}
             style={{ width: 45, height: 45, borderRadius: 30,marginRight:15 }}
           />
       </View>
       ),
     });
-  }, []);
+  }, [refreshing]);
 
   const onPressOption = (item) => {
     console.log("Navigate")
-    navigation.navigate(item.nav,{TypeId,UserType})
+    const isUpdate=false
+    navigation.navigate(item.nav,{TypeId,UserType,isUpdate})
   };
 
   const data = [{id:1,name:"My orders",nav:"MyOrders",desc:"See your orders",img:"https://images.unsplash.com/photo-1588675646184-f5b0b0b0b2de?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80"},
@@ -63,18 +65,21 @@ const data2 = [{id:1,nav:"MyOrders",name:"My orders",desc:"See your orders",img:
     </TouchableHighlight>
   );
   
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    wait(1000).then(() => setRefreshing(false));
+  }, []);
+
   return (
     <View style={styles.HomeContainer}>
-        {/* <Video
-          source={{ uri: "https://firebasestorage.googleapis.com/v0/b/agri-mart-pid11.appspot.com/o/profilePictures%2Fvideo.mp4?alt=media&token=f4cfadb8-950b-4183-9ae4-f642bc5d7e95" }}
-          rate={1.0}
-          volume={1.0}
-          muted={true}
-          resizeMode={'cover'}
-          repeat
-          style={styles.video}
-        /> */}
-      <FlatList vertical showsVerticalScrollIndicator={false} numColumns={1} data={UserType=="buyer"?data:data2} renderItem={renderOption} keyExtractor={(option) => `${option.id}`} />
+      <FlatList 
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />}
+      vertical style={{backgroundColor: "#FFFFFF"}} showsVerticalScrollIndicator={false} numColumns={1} data={UserType=="buyer"?data:data2} renderItem={renderOption} keyExtractor={(option) => `${option.id}`} />
     </View>
   )
 }

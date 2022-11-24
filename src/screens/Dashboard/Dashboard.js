@@ -6,9 +6,9 @@ import {PaddyFieldTargetProductivity2022,PaddyFieldProgressProductivity2022,Padd
 import Chart3_Bar from '../../components/Charts/chart3_Bar'
 import Chart5_comBar from '../../components/Charts/Chart5_compBar'
 
-
+const defaultProfile='https://firebasestorage.googleapis.com/v0/b/agri-mart-pid11.appspot.com/o/profilePictures%2FDefault%20profile%20picture%20green.png?alt=media&token=388b1552-9aca-451a-ab99-0e9a11985627'
 export default function Dashboard({ navigation }) {
-  const { user } = useLogin();
+  const { user,UserProfile } = useLogin();
   const [UserID, setUserID] = useState(user._id);
   const [TypeId, setTypeId] = useState(user.typeId);
   const [UserType, setUserType] = useState(user.userType);
@@ -26,8 +26,7 @@ export default function Dashboard({ navigation }) {
       <View>
           <Image
             source={{
-              uri:
-                'https://firebasestorage.googleapis.com/v0/b/agri-mart-pid11.appspot.com/o/profilePictures%2FDefault%20profile%20picture%20green.png?alt=media&token=388b1552-9aca-451a-ab99-0e9a11985627',
+              uri:(UserProfile.proPicUrl?UserProfile.proPicUrl:defaultProfile)
             }}
             style={{ width: 45, height: 45, borderRadius: 30,marginRight:15 }}
           />
