@@ -164,7 +164,7 @@ export default function MiniMarket(props) {
               firstItem={0}
               loop={true}
               autoplay={true}
-              autoplayDelay={2000}
+              autoplayDelay={3000}
               autoplayInterval={3000}
               onSnapToItem={(index) => setActiveSlide(index)}
           />

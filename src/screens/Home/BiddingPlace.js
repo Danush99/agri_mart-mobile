@@ -97,8 +97,8 @@ export default function BiddingPlace(props) {
                 firstItem={0}
                 loop={true}
                 autoplay={true}
-                autoplayDelay={2000}
-                autoplayInterval={2000}
+                autoplayDelay={3000}
+                autoplayInterval={3000}
                 onSnapToItem={(index) => setActiveSlide(index)}
             />
             <Pagination
